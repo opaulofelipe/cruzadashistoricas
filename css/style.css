@@ -17,7 +17,7 @@
   --reveal-soft: #fff3c6;
   --shadow: 0 14px 36px rgba(23, 26, 29, 0.08);
   --radius: 7px;
-  --cell-size: clamp(32px, 7vw, 46px);
+  --cell-size: 46px;
   color: var(--ink);
   background: var(--bg);
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -43,7 +43,7 @@ button { touch-action: manipulation; }
 }
 .skip-link:focus { transform: translateY(0); }
 
-.shell { width: min(1180px, calc(100% - 32px)); margin-inline: auto; }
+.shell { width: min(1180px, calc(100% - 28px)); margin-inline: auto; }
 .site-header { border-bottom: 1px solid var(--line); background: rgba(245, 243, 238, 0.96); }
 .header-inner { display: flex; min-height: 102px; align-items: center; }
 
@@ -113,27 +113,36 @@ legend { margin-bottom: 5px; padding: 0; font-size: 1.05rem; font-weight: 800; }
 .game-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(290px, 360px); gap: 30px; align-items: start; }
 .board-panel { min-width: 0; }
 .board-scroll {
+  width: 100%;
   max-width: 100%;
   overflow: auto;
   overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   padding: 8px;
   border: 1px solid var(--line);
   background: var(--surface);
   box-shadow: var(--shadow);
-  scrollbar-gutter: stable;
 }
 .crossword-grid {
   display: grid;
   grid-template-columns: repeat(var(--cols), var(--cell-size));
   grid-template-rows: repeat(var(--rows), var(--cell-size));
   width: max-content;
-  border: 1px solid var(--ink);
-  background: var(--ink);
-  gap: 1px;
+  max-width: none;
+  border: 0;
+  background: transparent;
+  gap: 2px;
 }
 .cell-wrap, .block-cell { position: relative; width: var(--cell-size); height: var(--cell-size); }
-.block-cell { background: var(--ink); }
-.cell-wrap { background: white; }
+/* Espaços sem letras existem apenas para manter o posicionamento da grade.
+   Visualmente ficam vazios, evitando grandes manchas pretas. */
+.block-cell { visibility: hidden; background: transparent; pointer-events: none; }
+.cell-wrap {
+  background: white;
+  border: 1px solid var(--ink);
+  box-shadow: 0 1px 0 rgba(23, 26, 29, 0.04);
+}
+.crossword-grid.is-overflowing { padding-bottom: 2px; }
 .cell-number { position: absolute; z-index: 2; top: 2px; left: 3px; color: var(--ink); font-size: clamp(0.52rem, 1.8vw, 0.65rem); font-weight: 800; line-height: 1; pointer-events: none; }
 .cell-input {
   width: 100%;
@@ -191,16 +200,60 @@ legend { margin-bottom: 5px; padding: 0; font-size: 1.05rem; font-weight: 800; }
 }
 
 @media (max-width: 560px) {
-  :root { --cell-size: clamp(30px, 9vw, 40px); }
-  .shell { width: min(calc(100% - 20px), 1180px); }
-  .header-inner { min-height: 86px; }
-  .setup-view, .game-view { padding-block: 28px 44px; }
-  .option-grid, .difficulty-grid, .clues-panel { grid-template-columns: 1fr; }
-  .choice-card { min-height: 76px; }
-  .game-heading { display: grid; }
+  .shell { width: calc(100% - 20px); }
+  .header-inner { min-height: 76px; }
+  h1 { font-size: clamp(1.55rem, 8vw, 2rem); }
+  .setup-view, .game-view { padding-block: 22px 34px; }
+  .intro { margin-bottom: 18px; }
+  .setup-form { gap: 22px; margin-top: 18px; }
+
+  /* Temas em duas colunas reduzem rolagem sem sacrificar toque. */
+  .option-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .difficulty-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .choice-card { min-height: 68px; padding: 11px 10px; }
+  .choice-title { font-size: 0.92rem; }
+  .choice-description { font-size: 0.76rem; line-height: 1.25; }
+  .difficulty-grid .choice-description { display: none; }
+
+  .setup-actions { display: grid; grid-template-columns: 1fr; }
+  .setup-actions .button { width: 100%; }
+
+  .game-heading { display: grid; gap: 14px; }
   .game-heading .button { width: 100%; }
-  .game-actions .button { flex: 1 1 140px; }
-  .board-scroll { margin-inline: -4px; padding: 5px; }
+  .game-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .game-actions .button { width: 100%; min-width: 0; padding-inline: 10px; }
+  .game-actions .button-quiet { grid-column: 1 / -1; }
+  .notice-compact { margin: 12px 0 14px; }
+
+  /* A grade usa toda a largura útil do telefone. */
+  .board-scroll {
+    width: calc(100% + 20px);
+    margin-inline: -10px;
+    padding: 7px 10px 9px;
+    border-inline: 0;
+    box-shadow: none;
+    background: transparent;
+  }
+  .crossword-grid { gap: 1px; margin-inline: auto; }
+  .cell-number { top: 1px; left: 2px; font-size: 0.48rem; }
+  .cell-input { padding: 7px 1px 1px; font-size: clamp(0.86rem, 4.6vw, 1.1rem); }
+
+  .clues-panel { grid-template-columns: 1fr; gap: 22px; margin-top: 4px; }
+  .clue-button { grid-template-columns: 2rem 1fr; padding: 10px 6px; }
+  .clue-text { font-size: 0.94rem; }
+
+  .dialog-content { padding: 22px; }
+}
+
+@media (max-width: 380px) {
+  .shell { width: calc(100% - 16px); }
+  .option-grid { grid-template-columns: 1fr; }
+  .choice-card { min-height: 62px; }
+  .board-scroll { width: calc(100% + 16px); margin-inline: -8px; padding-inline: 8px; }
+}
+
+@media (max-width: 700px) and (pointer: coarse) {
+  .keyboard-help { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
