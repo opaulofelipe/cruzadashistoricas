@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f3ee">
+  <meta name="description" content="Palavras cruzadas de História geradas a partir de um banco de perguntas em JSON.">
+  <title>Cruzadas de História</title>
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Ir para o conteúdo</a>
+
+  <header class="site-header">
+    <div class="shell header-inner">
+      <div>
+        <p class="eyebrow">Jogo de conhecimento</p>
+        <h1>Cruzadas de História</h1>
+      </div>
+    </div>
+  </header>
+
+  <main id="main" class="shell">
+    <section id="setup-view" class="setup-view" aria-labelledby="setup-title">
+      <div class="intro">
+        <h2 id="setup-title">Nova cruzadinha</h2>
+        <p>Escolha um tema geral e o nível das pistas. O gerador procura uma combinação conectada, compacta e com bons cruzamentos.</p>
+      </div>
+
+      <div id="data-status" class="notice" role="status" aria-live="polite">Carregando banco de palavras…</div>
+
+      <form id="setup-form" class="setup-form" hidden>
+        <fieldset>
+          <legend>Tema</legend>
+          <p class="field-help">As categorias são amplas. Você também pode misturar todo o banco.</p>
+          <div id="theme-options" class="option-grid"></div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Dificuldade</legend>
+          <p class="field-help">O nível escolhido prioriza pistas daquela dificuldade sem prejudicar a qualidade da grade.</p>
+          <div class="difficulty-grid">
+            <label class="choice-card">
+              <input type="radio" name="difficulty" value="1">
+              <span class="choice-title">Fácil</span>
+              <span class="choice-description">Prioriza pistas diretas e termos mais conhecidos.</span>
+            </label>
+            <label class="choice-card">
+              <input type="radio" name="difficulty" value="2" checked>
+              <span class="choice-title">Médio</span>
+              <span class="choice-description">Equilibra pistas diretas e conteúdo mais específico.</span>
+            </label>
+            <label class="choice-card">
+              <input type="radio" name="difficulty" value="3">
+              <span class="choice-title">Difícil</span>
+              <span class="choice-description">Prioriza termos e pistas mais especializados.</span>
+            </label>
+          </div>
+        </fieldset>
+
+        <div class="setup-actions">
+          <button id="generate-button" class="button button-primary" type="submit">Gerar cruzadinha</button>
+          <button id="resume-button" class="button button-secondary" type="button" hidden>Continuar partida</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="game-view" class="game-view" hidden aria-labelledby="game-title">
+      <div class="game-heading">
+        <div>
+          <p id="game-kicker" class="eyebrow"></p>
+          <h2 id="game-title">Palavras cruzadas</h2>
+          <p id="game-summary" class="game-summary"></p>
+        </div>
+        <button id="new-button" class="button button-secondary" type="button">Nova cruzadinha</button>
+      </div>
+
+      <div class="game-actions" aria-label="Ações da partida">
+        <button id="check-button" class="button button-secondary" type="button">Verificar</button>
+        <button id="reveal-button" class="button button-secondary" type="button">Revelar letra</button>
+        <button id="clear-button" class="button button-quiet" type="button">Limpar respostas</button>
+      </div>
+
+      <p id="game-status" class="notice notice-compact" role="status" aria-live="polite"></p>
+
+      <div class="game-layout">
+        <section class="board-panel" aria-label="Grade da cruzadinha">
+          <div id="board-scroll" class="board-scroll" tabindex="0" aria-label="Área rolável da cruzadinha">
+            <div id="crossword-grid" class="crossword-grid" role="grid" aria-label="Palavras cruzadas"></div>
+          </div>
+          <p class="keyboard-help">Teclado: digite para avançar; Backspace volta; setas navegam; Enter ou Espaço alterna a direção em cruzamentos.</p>
+        </section>
+
+        <aside class="clues-panel" aria-label="Pistas">
+          <section aria-labelledby="across-title">
+            <h3 id="across-title">Horizontais</h3>
+            <ol id="across-clues" class="clue-list"></ol>
+          </section>
+          <section aria-labelledby="down-title">
+            <h3 id="down-title">Verticais</h3>
+            <ol id="down-clues" class="clue-list"></ol>
+          </section>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="complete-dialog" class="complete-dialog">
+    <div class="dialog-content">
+      <p class="eyebrow">Concluída</p>
+      <h2>Você completou a cruzadinha.</h2>
+      <p id="complete-text"></p>
+      <div class="dialog-actions">
+        <button id="close-dialog-button" class="button button-secondary" type="button">Revisar grade</button>
+        <button id="dialog-new-button" class="button button-primary" type="button">Nova cruzadinha</button>
+      </div>
+    </div>
+  </dialog>
+
+  <noscript><p class="shell notice">Este jogo precisa de JavaScript habilitado.</p></noscript>
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>

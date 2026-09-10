@@ -1,0 +1,22 @@
+{
+  "perguntas": [
+    {"id":1,"resposta":"PALEOLITICO","exibicao":"Paleolítico","dica":"Período da pedra lascada.","tema":"Pré-História","subtema":"Paleolítico","dificuldade":1,"ativo":true},
+    {"id":2,"resposta":"NOMADISMO","exibicao":"Nomadismo","dica":"Modo de vida sem residência fixa permanente.","tema":"Pré-História","subtema":"Paleolítico","dificuldade":1,"ativo":true},
+    {"id":3,"resposta":"BIFACE","exibicao":"Biface","dica":"Instrumento lítico trabalhado nas duas faces.","tema":"Pré-História","subtema":"Paleolítico","dificuldade":2,"ativo":true},
+    {"id":4,"resposta":"LASCAUX","exibicao":"Lascaux","dica":"Caverna francesa famosa por pinturas rupestres.","tema":"Pré-História","subtema":"Arte","dificuldade":1,"ativo":true},
+    {"id":5,"resposta":"FOGO","exibicao":"Fogo","dica":"Domínio técnico essencial à sobrevivência humana.","tema":"Pré-História","subtema":"Paleolítico","dificuldade":1,"ativo":true},
+    {"id":6,"resposta":"NEOLITICO","exibicao":"Neolítico","dica":"Período ligado à agricultura e sedentarização.","tema":"Pré-História","subtema":"Neolítico","dificuldade":1,"ativo":true},
+    {"id":7,"resposta":"AGRICULTURA","exibicao":"Agricultura","dica":"Cultivo sistemático de plantas.","tema":"Pré-História","subtema":"Neolítico","dificuldade":1,"ativo":true},
+    {"id":8,"resposta":"CERAMICA","exibicao":"Cerâmica","dica":"Produção com argila que ganhou importância no Neolítico.","tema":"Pré-História","subtema":"Neolítico","dificuldade":2,"ativo":true},
+    {"id":9,"resposta":"MEGALITO","exibicao":"Megálito","dica":"Grande bloco de pedra usado em construções pré-históricas.","tema":"Pré-História","subtema":"Neolítico","dificuldade":2,"ativo":true},
+    {"id":10,"resposta":"DOLMEN","exibicao":"Dólmen","dica":"Estrutura megalítica geralmente associada a sepultamentos.","tema":"Pré-História","subtema":"Neolítico","dificuldade":2,"ativo":true},
+    {"id":11,"resposta":"MENIR","exibicao":"Menir","dica":"Pedra vertical erguida por populações pré-históricas.","tema":"Pré-História","subtema":"Neolítico","dificuldade":2,"ativo":true},
+    {"id":12,"resposta":"BRONZE","exibicao":"Bronze","dica":"Liga metálica de cobre e estanho.","tema":"Pré-História","subtema":"Metais","dificuldade":1,"ativo":true},
+    {"id":13,"resposta":"FERRO","exibicao":"Ferro","dica":"Metal associado à última das tradicionais idades dos metais.","tema":"Pré-História","subtema":"Metais","dificuldade":1,"ativo":true},
+    {"id":14,"resposta":"FUNDICAO","exibicao":"Fundição","dica":"Técnica de derreter metal para moldá-lo.","tema":"Pré-História","subtema":"Metais","dificuldade":2,"ativo":true},
+    {"id":15,"resposta":"FORJA","exibicao":"Forja","dica":"Trabalho do metal por aquecimento e martelamento.","tema":"Pré-História","subtema":"Metais","dificuldade":2,"ativo":true},
+    {"id":16,"resposta":"ESTANHO","exibicao":"Estanho","dica":"Metal usado com cobre para formar bronze.","tema":"Pré-História","subtema":"Metais","dificuldade":2,"ativo":true},
+    {"id":17,"resposta":"ALDEIA","exibicao":"Aldeia","dica":"Assentamento permanente ligado ao sedentarismo.","tema":"Pré-História","subtema":"Neolítico","dificuldade":1,"ativo":true},
+    {"id":18,"resposta":"EXCEDENTE","exibicao":"Excedente","dica":"Produção além do consumo imediato.","tema":"Pré-História","subtema":"Neolítico","dificuldade":2,"ativo":true}
+  ]
+}
