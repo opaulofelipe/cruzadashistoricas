@@ -319,9 +319,7 @@
       "subtema": "Idade dos Metais",
       "dificuldade": 3,
       "ativo": true
-    }
-
-,
+    },
     {
       "id": 33,
       "resposta": "POLIS",
@@ -641,8 +639,7 @@
       "subtema": "Roma Antiga",
       "dificuldade": 3,
       "ativo": true
-    }
-    ,
+    },
     {
       "id": 65,
       "resposta": "MESOPOTAMIA",
@@ -962,8 +959,7 @@
       "subtema": "Hebreus",
       "dificuldade": 2,
       "ativo": true
-    }
-    ,
+    },
     {
       "id": 97,
       "resposta": "PERSAS",
@@ -1283,9 +1279,7 @@
       "subtema": "Reino de Cuxe",
       "dificuldade": 2,
       "ativo": true
-    }
-
-    ,
+    },
     {
       "id": 129,
       "resposta": "HARAPPA",
@@ -1605,9 +1599,7 @@
       "subtema": "Japão Antigo",
       "dificuldade": 2,
       "ativo": true
-    }
-
-    ,
+    },
     {
       "id": 161,
       "resposta": "NUBIA",
@@ -1927,9 +1919,7 @@
       "subtema": "África Ocidental",
       "dificuldade": 3,
       "ativo": true
-    }
-
-    ,
+    },
     {
       "id": 193,
       "resposta": "SAHUL",
@@ -2249,9 +2239,7 @@
       "subtema": "Oceania",
       "dificuldade": 2,
       "ativo": true
-    }
-
-    ,
+    },
     {
       "id": 225,
       "resposta": "CLOVIS",
@@ -2571,9 +2559,7 @@
       "subtema": "Andes",
       "dificuldade": 2,
       "ativo": true
-    }
-
-    ,
+    },
     {
       "id": 257,
       "resposta": "INCAS",
@@ -2893,8 +2879,7 @@
       "subtema": "Astecas",
       "dificuldade": 2,
       "ativo": true
-    }
-    ,
+    },
     {
       "id": 289,
       "resposta": "COPAN",
@@ -2974,9 +2959,7 @@
       "subtema": "Maias",
       "dificuldade": 3,
       "ativo": true
-    }
-
-,
+    },
     {
       "id": 297,
       "resposta": "FEUDALISMO",
@@ -3296,8 +3279,7 @@
       "subtema": "Península Ibérica",
       "dificuldade": 2,
       "ativo": true
-    }
-    ,
+    },
     {
       "id": 329,
       "resposta": "GANA",
@@ -3617,8 +3599,7 @@
       "subtema": "Império Bizantino",
       "dificuldade": 1,
       "ativo": true
-    }
-    ,
+    },
     {
       "id": 361,
       "resposta": "TANG",
@@ -3938,8 +3919,7 @@
       "subtema": "Índia Medieval",
       "dificuldade": 2,
       "ativo": true
-    }
-    ,
+    },
     {
       "id": 393,
       "resposta": "TUITONGA",
@@ -4259,8 +4239,7 @@
       "subtema": "Navegação do Pacífico",
       "dificuldade": 3,
       "ativo": true
-    }
-    ,
+    },
     {
       "id": 425,
       "resposta": "RENASCIMENTO",
@@ -4580,9 +4559,7 @@
       "subtema": "Inglaterra Moderna",
       "dificuldade": 2,
       "ativo": true
-    }
-
-    ,
+    },
     {
       "id": 457,
       "resposta": "REINODOCONGO",
@@ -4902,8 +4879,7 @@
       "subtema": "Península Arábica",
       "dificuldade": 3,
       "ativo": true
-    }
-    ,
+    },
     {
       "id": 489,
       "resposta": "MING",
@@ -5223,8 +5199,7 @@
       "subtema": "Índia Moderna",
       "dificuldade": 2,
       "ativo": true
-    }
-    ,
+    },
     {
       "id": 521,
       "resposta": "MAGALHAES",
@@ -5544,8 +5519,7 @@
       "subtema": "Oceania",
       "dificuldade": 2,
       "ativo": true
-    }
-    ,
+    },
     {
       "id": 553,
       "resposta": "COLOMBO",
@@ -5865,8 +5839,7 @@
       "subtema": "Independência dos Estados Unidos",
       "dificuldade": 1,
       "ativo": true
-    }
-    ,
+    },
     {
       "id": 585,
       "resposta": "REVOLUCAOFRANCESA",
@@ -6186,9 +6159,7 @@
       "subtema": "Segunda Guerra Mundial",
       "dificuldade": 1,
       "ativo": true
-    }
-
-    ,
+    },
     {
       "id": 617,
       "resposta": "PARTILHADAAFRICA",
@@ -6508,8 +6479,7 @@
       "subtema": "Segunda Guerra Mundial na África",
       "dificuldade": 1,
       "ativo": true
-    }
-    ,
+    },
     {
       "id": 649,
       "resposta": "TANZIMAT",
@@ -6829,8 +6799,7 @@
       "subtema": "Ásia Central",
       "dificuldade": 3,
       "ativo": true
-    }
-    ,
+    },
     {
       "id": 681,
       "resposta": "GUERRADOOPIO",
@@ -7150,8 +7119,7 @@
       "subtema": "Tailândia",
       "dificuldade": 1,
       "ativo": true
-    }
-    ,
+    },
     {
       "id": 713,
       "resposta": "EUREKA",
@@ -7471,8 +7439,7 @@
       "subtema": "Havaí",
       "dificuldade": 2,
       "ativo": true
-    }
-    ,
+    },
     {
       "id": 745,
       "resposta": "DOUTRINAMONROE",
@@ -7792,8 +7759,7 @@
       "subtema": "Uruguai",
       "dificuldade": 3,
       "ativo": true
-    }
-    ,
+    },
     {
       "id": 777,
       "resposta": "CORTINADEFERRO",
@@ -8113,8 +8079,7 @@
       "subtema": "Reino Unido e União Europeia",
       "dificuldade": 1,
       "ativo": true
-    }
-    ,
+    },
     {
       "id": 809,
       "resposta": "REVOLUCAOTRANQUILA",
@@ -8434,8 +8399,7 @@
       "subtema": "Venezuela",
       "dificuldade": 1,
       "ativo": true
-    }
-    ,
+    },
     {
       "id": 841,
       "resposta": "GRANDESALTOADIANTE",
@@ -8755,8 +8719,7 @@
       "subtema": "Taiwan e China",
       "dificuldade": 2,
       "ativo": true
-    }
-    ,
+    },
     {
       "id": 873,
       "resposta": "MIGRACAOPOSGUERRA",
@@ -9076,8 +9039,7 @@
       "subtema": "Oceania",
       "dificuldade": 2,
       "ativo": true
-    }
-    ,
+    },
     {
       "id": 905,
       "resposta": "DESCOLONIZACAOAFRICANA",
@@ -9397,8 +9359,7 @@
       "subtema": "Burkina Faso",
       "dificuldade": 2,
       "ativo": true
-    }
-    ,
+    },
     {
       "id": 937,
       "resposta": "ISRAEL",
@@ -9718,8 +9679,7 @@
       "subtema": "Petróleo e Golfo",
       "dificuldade": 2,
       "ativo": true
-    }
-    ,
+    },
     {
       "id": 969,
       "resposta": "URSS",
@@ -10039,8 +9999,7 @@
       "subtema": "Dissolução da URSS",
       "dificuldade": 2,
       "ativo": true
-    }
-    ,
+    },
     {
       "id": 1001,
       "resposta": "HARRYTRUMAN",
@@ -10360,8 +10319,7 @@
       "subtema": "Estados Unidos",
       "dificuldade": 1,
       "ativo": true
-    }
-    ,
+    },
     {
       "id": 1033,
       "resposta": "LUZIA",
@@ -10681,8 +10639,7 @@
       "subtema": "Povos Indígenas",
       "dificuldade": 2,
       "ativo": true
-    }
-    ,
+    },
     {
       "id": 1065,
       "resposta": "PAUBRASIL",
@@ -11002,8 +10959,7 @@
       "subtema": "Revoltas Coloniais",
       "dificuldade": 2,
       "ativo": true
-    }
-    ,
+    },
     {
       "id": 1097,
       "resposta": "PEDROI",
@@ -11323,8 +11279,7 @@
       "subtema": "Crise do Império",
       "dificuldade": 1,
       "ativo": true
-    }
-    ,
+    },
     {
       "id": 1129,
       "resposta": "DEODORODAFONSECA",
@@ -11644,8 +11599,7 @@
       "subtema": "Crise da República Velha",
       "dificuldade": 1,
       "ativo": true
-    }
-    ,
+    },
     {
       "id": 1161,
       "resposta": "GETULIOVARGAS",
@@ -11965,8 +11919,7 @@
       "subtema": "Golpe de Sessenta e Quatro",
       "dificuldade": 1,
       "ativo": true
-    }
-    ,
+    },
     {
       "id": 1193,
       "resposta": "CASTELOBRANCO",
@@ -12286,8 +12239,7 @@
       "subtema": "Redemocratização",
       "dificuldade": 1,
       "ativo": true
-    }
-    ,
+    },
     {
       "id": 1225,
       "resposta": "JOSESARNEY",
@@ -12606,6 +12558,326 @@
       "tema": "História do Brasil",
       "subtema": "Governo Lula",
       "dificuldade": 1,
+      "ativo": true
+    },
+    {
+      "id": 1257,
+      "resposta": "EHC",
+      "exibicao": "EHC",
+      "dica": "Edward Hallett Carr, historiador britânico e autor de 'Que é História?'.",
+      "tema": "Coringa",
+      "subtema": "Historiadores",
+      "dificuldade": 2,
+      "ativo": true
+    },
+    {
+      "id": 1258,
+      "resposta": "EPT",
+      "exibicao": "EPT",
+      "dica": "Edward Palmer Thompson, historiador marxista britânico e autor de 'A Formação da Classe Operária Inglesa'.",
+      "tema": "Coringa",
+      "subtema": "Historiadores",
+      "dificuldade": 2,
+      "ativo": true
+    },
+    {
+      "id": 1259,
+      "resposta": "RGC",
+      "exibicao": "RGC",
+      "dica": "Robin George Collingwood, filósofo e historiador britânico, autor de 'A Ideia de História'.",
+      "tema": "Coringa",
+      "subtema": "Historiadores",
+      "dificuldade": 2,
+      "ativo": true
+    },
+    {
+      "id": 1260,
+      "resposta": "JLG",
+      "exibicao": "JLG",
+      "dica": "Jacques Le Goff, historiador medievalista francês e autor de 'História e Memória'.",
+      "tema": "Coringa",
+      "subtema": "Historiadores",
+      "dificuldade": 2,
+      "ativo": true
+    },
+    {
+      "id": 1261,
+      "resposta": "MDC",
+      "exibicao": "MDC",
+      "dica": "Michel de Certeau, historiador francês e autor de 'A Escrita da História'.",
+      "tema": "Coringa",
+      "subtema": "Historiadores",
+      "dificuldade": 2,
+      "ativo": true
+    },
+    {
+      "id": 1262,
+      "resposta": "NZD",
+      "exibicao": "NZD",
+      "dica": "Natalie Zemon Davis, historiadora norte-americana e autora de 'O Retorno de Martin Guerre'.",
+      "tema": "Coringa",
+      "subtema": "Historiadores",
+      "dificuldade": 2,
+      "ativo": true
+    },
+    {
+      "id": 1263,
+      "resposta": "JWS",
+      "exibicao": "JWS",
+      "dica": "Joan Wallach Scott, historiadora norte-americana e autora do ensaio 'Gênero: uma categoria útil de análise histórica'.",
+      "tema": "Coringa",
+      "subtema": "Historiadores",
+      "dificuldade": 2,
+      "ativo": true
+    },
+    {
+      "id": 1264,
+      "resposta": "MDP",
+      "exibicao": "MDP",
+      "dica": "Mary Del Priore, historiadora brasileira e organizadora de 'História das Mulheres no Brasil'.",
+      "tema": "Coringa",
+      "subtema": "Historiadores",
+      "dificuldade": 2,
+      "ativo": true
+    },
+    {
+      "id": 1265,
+      "resposta": "LMS",
+      "exibicao": "LMS",
+      "dica": "Lilia Moritz Schwarcz, historiadora e antropóloga brasileira, autora de 'As Barbas do Imperador: D. Pedro II, um monarca nos trópicos'.",
+      "tema": "Coringa",
+      "subtema": "Historiadores",
+      "dificuldade": 2,
+      "ativo": true
+    },
+    {
+      "id": 1266,
+      "resposta": "JMC",
+      "exibicao": "JMC",
+      "dica": "José Murilo de Carvalho, historiador brasileiro e autor de 'Os Bestializados: o Rio de Janeiro e a República que não foi'.",
+      "tema": "Coringa",
+      "subtema": "Historiadores",
+      "dificuldade": 2,
+      "ativo": true
+    },
+    {
+      "id": 1267,
+      "resposta": "SBH",
+      "exibicao": "SBH",
+      "dica": "Sérgio Buarque de Holanda, historiador brasileiro e autor de 'Raízes do Brasil'.",
+      "tema": "Coringa",
+      "subtema": "Historiadores",
+      "dificuldade": 2,
+      "ativo": true
+    },
+    {
+      "id": 1268,
+      "resposta": "CPJ",
+      "exibicao": "CPJ",
+      "dica": "Caio Prado Júnior, historiador marxista brasileiro e autor de 'Formação do Brasil Contemporâneo'.",
+      "tema": "Coringa",
+      "subtema": "Historiadores",
+      "dificuldade": 2,
+      "ativo": true
+    },
+    {
+      "id": 1269,
+      "resposta": "CFC",
+      "exibicao": "CFC",
+      "dica": "Ciro Flamarion Cardoso, historiador brasileiro e coautor de 'Os Métodos da História'.",
+      "tema": "Coringa",
+      "subtema": "Historiadores",
+      "dificuldade": 2,
+      "ativo": true
+    },
+    {
+      "id": 1270,
+      "resposta": "MAS",
+      "exibicao": "MAS",
+      "dica": "Maria Auxiliadora Schmidt, historiadora brasileira ligada à Educação Histórica e coorganizadora de 'Aprender História: perspectivas da Educação Histórica'.",
+      "tema": "Coringa",
+      "subtema": "Historiadores",
+      "dificuldade": 2,
+      "ativo": true
+    },
+    {
+      "id": 1271,
+      "resposta": "ACG",
+      "exibicao": "ACG",
+      "dica": "Angela de Castro Gomes, historiadora brasileira e autora de 'A Invenção do Trabalhismo'.",
+      "tema": "Coringa",
+      "subtema": "Historiadores",
+      "dificuldade": 2,
+      "ativo": true
+    },
+    {
+      "id": 1272,
+      "resposta": "JHE",
+      "exibicao": "JHE",
+      "dica": "John Huxtable Elliott, historiador britânico especializado na Espanha moderna e autor de 'Imperial Spain, 1469–1716'.",
+      "tema": "Coringa",
+      "subtema": "Historiadores",
+      "dificuldade": 2,
+      "ativo": true
+    },
+    {
+      "id": 1273,
+      "resposta": "ERA",
+      "exibicao": "Era",
+      "dica": "Grande período utilizado para organizar ou caracterizar o tempo histórico.",
+      "tema": "Coringa",
+      "subtema": "Ciências Humanas",
+      "dificuldade": 2,
+      "ativo": true
+    },
+    {
+      "id": 1274,
+      "resposta": "ATO",
+      "exibicao": "Ato",
+      "dica": "Ação praticada por uma pessoa, grupo ou instituição e que pode produzir efeitos sociais ou políticos.",
+      "tema": "Coringa",
+      "subtema": "Ciências Humanas",
+      "dificuldade": 2,
+      "ativo": true
+    },
+    {
+      "id": 1275,
+      "resposta": "LEI",
+      "exibicao": "Lei",
+      "dica": "Norma jurídica estabelecida pelo poder competente para regular relações em uma sociedade.",
+      "tema": "Coringa",
+      "subtema": "Ciências Humanas",
+      "dificuldade": 2,
+      "ativo": true
+    },
+    {
+      "id": 1276,
+      "resposta": "SER",
+      "exibicao": "Ser",
+      "dica": "Conceito fundamental da filosofia relacionado à existência e àquilo que existe.",
+      "tema": "Coringa",
+      "subtema": "Ciências Humanas",
+      "dificuldade": 2,
+      "ativo": true
+    },
+    {
+      "id": 1277,
+      "resposta": "ACAO",
+      "exibicao": "Ação",
+      "dica": "Conduta ou prática realizada por indivíduos ou grupos e analisada pelas ciências humanas em seu contexto.",
+      "tema": "Coringa",
+      "subtema": "Ciências Humanas",
+      "dificuldade": 2,
+      "ativo": true
+    },
+    {
+      "id": 1278,
+      "resposta": "AREA",
+      "exibicao": "Área",
+      "dica": "Campo delimitado de estudo, pesquisa ou conhecimento.",
+      "tema": "Coringa",
+      "subtema": "Ciências Humanas",
+      "dificuldade": 2,
+      "ativo": true
+    },
+    {
+      "id": 1279,
+      "resposta": "DADO",
+      "exibicao": "Dado",
+      "dica": "Informação coletada ou registrada e utilizada como base para uma pesquisa ou análise.",
+      "tema": "Coringa",
+      "subtema": "Ciências Humanas",
+      "dificuldade": 2,
+      "ativo": true
+    },
+    {
+      "id": 1280,
+      "resposta": "FATO",
+      "exibicao": "Fato",
+      "dica": "Acontecimento ou ocorrência que pode ser selecionado e interpretado como objeto de análise histórica.",
+      "tema": "Coringa",
+      "subtema": "Ciências Humanas",
+      "dificuldade": 2,
+      "ativo": true
+    },
+    {
+      "id": 1281,
+      "resposta": "IDEIA",
+      "exibicao": "Ideia",
+      "dica": "Representação, conceito ou formulação elaborada pelo pensamento.",
+      "tema": "Coringa",
+      "subtema": "Ciências Humanas",
+      "dificuldade": 2,
+      "ativo": true
+    },
+    {
+      "id": 1282,
+      "resposta": "MEIO",
+      "exibicao": "Meio",
+      "dica": "Contexto ou ambiente no qual indivíduos, grupos e fenômenos sociais estão inseridos.",
+      "tema": "Coringa",
+      "subtema": "Ciências Humanas",
+      "dificuldade": 2,
+      "ativo": true
+    },
+    {
+      "id": 1283,
+      "resposta": "REDE",
+      "exibicao": "Rede",
+      "dica": "Conjunto de relações que conecta pessoas, grupos, instituições ou lugares.",
+      "tema": "Coringa",
+      "subtema": "Ciências Humanas",
+      "dificuldade": 2,
+      "ativo": true
+    },
+    {
+      "id": 1284,
+      "resposta": "RITO",
+      "exibicao": "Rito",
+      "dica": "Prática simbólica realizada segundo costumes ou regras compartilhadas por um grupo social.",
+      "tema": "Coringa",
+      "subtema": "Ciências Humanas",
+      "dificuldade": 2,
+      "ativo": true
+    },
+    {
+      "id": 1285,
+      "resposta": "TEMA",
+      "exibicao": "Tema",
+      "dica": "Assunto central escolhido para uma pesquisa, análise ou discussão.",
+      "tema": "Coringa",
+      "subtema": "Ciências Humanas",
+      "dificuldade": 2,
+      "ativo": true
+    },
+    {
+      "id": 1286,
+      "resposta": "TESE",
+      "exibicao": "Tese",
+      "dica": "Proposição ou interpretação defendida por meio de argumentos e evidências.",
+      "tema": "Coringa",
+      "subtema": "Ciências Humanas",
+      "dificuldade": 2,
+      "ativo": true
+    },
+    {
+      "id": 1287,
+      "resposta": "MITO",
+      "exibicao": "Mito",
+      "dica": "Narrativa simbólica que pode expressar valores, origens e explicações compartilhadas por uma sociedade.",
+      "tema": "Coringa",
+      "subtema": "Ciências Humanas",
+      "dificuldade": 2,
+      "ativo": true
+    },
+    {
+      "id": 1288,
+      "resposta": "ETICA",
+      "exibicao": "Ética",
+      "dica": "Campo da filosofia dedicado à reflexão sobre a conduta, os valores e os critérios do agir humano.",
+      "tema": "Coringa",
+      "subtema": "Ciências Humanas",
+      "dificuldade": 2,
       "ativo": true
     }
   ]
