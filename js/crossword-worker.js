@@ -1,12 +1,13 @@
 import { generateCrossword } from "./generator.js";
 
 self.addEventListener("message", (event) => {
-  if (event.data?.type !== "generate") return;
+  const message = event.data;
+  if (message?.type !== "generate") return;
 
   try {
     const puzzle = generateCrossword(
-      event.data.words,
-      event.data.options || {},
+      message.words,
+      message.options,
       (progress) => self.postMessage({ type: "progress", ...progress })
     );
 
@@ -14,7 +15,7 @@ self.addEventListener("message", (event) => {
   } catch (error) {
     self.postMessage({
       type: "error",
-      message: error instanceof Error ? error.message : "Erro desconhecido no gerador."
+      message: error instanceof Error ? error.message : "Erro ao gerar a cruzadinha."
     });
   }
 });

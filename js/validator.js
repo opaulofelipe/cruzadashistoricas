@@ -1,9 +1,5 @@
 export const ANSWER_PATTERN = /^[A-Z]+$/;
 
-/**
- * Valida e normaliza estruturalmente o banco sem alterar a resposta da cruzada.
- * Registros inválidos são ignorados; a origem continua intacta.
- */
 export function validateBank(raw) {
   const source = Array.isArray(raw) ? raw : raw?.perguntas;
   if (!Array.isArray(source)) {
@@ -33,9 +29,8 @@ export function validateBank(raw) {
     }
     ids.add(id);
 
-    // Regra central do projeto: resposta é exclusivamente A-Z.
     if (!ANSWER_PATTERN.test(answer)) {
-      warnings.push(`${prefix}: "resposta" deve conter somente letras A-Z (${JSON.stringify(answer)}).`);
+      warnings.push(`${prefix}: "resposta" deve conter apenas A-Z (${JSON.stringify(answer)}).`);
       continue;
     }
     if (answer.length < 2) {

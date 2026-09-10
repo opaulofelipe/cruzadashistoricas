@@ -6,33 +6,32 @@ import {
   loadWordBank,
   themeLabel
 } from "./data.js";
-import { CrosswordGame } from "./game.js";
-import { CrosswordRenderer } from "./renderer.js";
 
-const STORAGE_KEY = "historia-crossword-state-v2";
-const STATE_VERSION = 2;
-const TARGET_WORDS = 14;
+const STORAGE_KEY = "historia-crossword-mobile-v3";
+const TARGET_WORDS = 16;
 
 const els = {
   setupView: document.querySelector("#setup-view"),
   gameView: document.querySelector("#game-view"),
   setupForm: document.querySelector("#setup-form"),
   dataStatus: document.querySelector("#data-status"),
-  themeOptions: document.querySelector("#theme-options"),
+  themeSelect: document.querySelector("#theme-select"),
   generateButton: document.querySelector("#generate-button"),
   resumeButton: document.querySelector("#resume-button"),
+  headerNewButton: document.querySelector("#header-new-button"),
+
   gameKicker: document.querySelector("#game-kicker"),
-  gameTitle: document.querySelector("#game-title"),
-  gameSummary: document.querySelector("#game-summary"),
-  gameStatus: document.querySelector("#game-status"),
-  newButton: document.querySelector("#new-button"),
+  progressText: document.querySelector("#progress-text"),
+  grid: document.querySelector("#crossword-grid"),
+  clueLabel: document.querySelector("#clue-label"),
+  clueText: document.querySelector("#clue-text"),
+  prevClue: document.querySelector("#prev-clue"),
+  nextClue: document.querySelector("#next-clue"),
   checkButton: document.querySelector("#check-button"),
   revealButton: document.querySelector("#reveal-button"),
-  clearButton: document.querySelector("#clear-button"),
-  grid: document.querySelector("#crossword-grid"),
-  boardScroll: document.querySelector("#board-scroll"),
-  acrossClues: document.querySelector("#across-clues"),
-  downClues: document.querySelector("#down-clues"),
+  clearWordButton: document.querySelector("#clear-word-button"),
+  gameStatus: document.querySelector("#game-status"),
+
   dialog: document.querySelector("#complete-dialog"),
   completeText: document.querySelector("#complete-text"),
   closeDialogButton: document.querySelector("#close-dialog-button"),
@@ -41,364 +40,183 @@ const els = {
 
 let bank = [];
 let worker = null;
-let game = null;
-let saveTimer = null;
-let lastPointerCellKey = null;
-let completionAnnounced = false;
 
-const renderer = new CrosswordRenderer(els, {
-  onCellFocus: (key) => {
-    if (!game) return;
-    game.activateCell(key);
-    renderer.sync(game);
-    scheduleSave();
-  },
-  onCellPointer: (key) => {
-    if (!game) return;
-    const cell = game.getCell(key);
-    if (lastPointerCellKey === key && cell?.acrossId && cell?.downId) game.toggleDirection();
-    lastPointerCellKey = key;
-    game.activateCell(key);
-    renderer.sync(game);
-    scheduleSave();
-  },
-  onCellInput: (key, value) => {
-    if (!game) return;
-    const focusKey = game.enterLetter(key, value);
-    renderer.sync(game);
-    if (focusKey && focusKey !== key) renderer.focusCell(focusKey);
-    afterPlayerChange();
-  },
-  onCellKeydown: handleCellKeydown,
-  onCellPaste: (key, event) => {
-    if (!game) return;
-    event.preventDefault();
-    const focusKey = game.paste(key, event.clipboardData?.getData("text") || "");
-    renderer.sync(game);
-    if (focusKey) renderer.focusCell(focusKey);
-    afterPlayerChange();
-  },
-  onClueClick: (wordId) => {
-    if (!game) return;
-    const key = game.selectWord(wordId);
-    renderer.sync(game);
-    if (key) renderer.focusCell(key);
-    scheduleSave();
-  }
-});
+let puzzle = null;
+let cellsByKey = new Map();
+let wordsById = new Map();
+let wordKeysById = new Map();
+let cellButtons = new Map();
+
+let entries = {};
+let revealed = new Set();
+let incorrect = new Set();
+let activeWordId = null;
+let activeCellKey = null;
+let completionShown = false;
 
 init();
 
 async function init() {
-  wireStaticEvents();
+  wireEvents();
 
   try {
-    const validated = await loadWordBank("./palavras.json");
-    bank = validated.words;
+    const result = await loadWordBank("./palavras.json");
+    bank = result.words;
 
-    if (bank.length < 8) {
-      throw new Error("O banco não possui palavras válidas suficientes para gerar uma cruzadinha.");
+    if (bank.length < 10) {
+      throw new Error("O banco possui poucas palavras válidas.");
     }
 
     populateThemes();
     els.setupForm.hidden = false;
     updateResumeButton();
 
-    const warningText = validated.warnings.length
-      ? ` ${validated.warnings.length} registro(s) inválido(s) ou duplicado(s) foram ignorados; veja o console.`
+    const warning = result.warnings.length
+      ? ` ${result.warnings.length} registro(s) foram ignorados.`
       : "";
 
-    setNotice(
-      els.dataStatus,
-      `${bank.length} palavras válidas carregadas.${warningText}`,
-      validated.warnings.length ? "warning" : "success"
-    );
+    setDataStatus(`${bank.length} palavras válidas carregadas.${warning}`, result.warnings.length ? "warning" : "success");
 
-    if (validated.warnings.length) {
-      console.groupCollapsed(`[palavras.json] ${validated.warnings.length} aviso(s)`);
-      validated.warnings.forEach((warning) => console.warn(warning));
+    if (result.warnings.length) {
+      console.groupCollapsed(`[palavras.json] ${result.warnings.length} aviso(s)`);
+      result.warnings.forEach((item) => console.warn(item));
       console.groupEnd();
     }
   } catch (error) {
     console.error(error);
-    setNotice(
-      els.dataStatus,
-      "Não foi possível carregar palavras.json. Confirme o arquivo e abra o projeto por um servidor local ou pelo GitHub Pages.",
+    setDataStatus(
+      "Não foi possível carregar palavras.json. Confirme se ele está na mesma pasta de index.html e publique pelo GitHub Pages.",
       "error"
     );
   }
 }
 
-function wireStaticEvents() {
-  els.setupForm.addEventListener("submit", handleGenerate);
-  els.resumeButton.addEventListener("click", restoreSavedGame);
-  els.newButton.addEventListener("click", showSetup);
+function wireEvents() {
+  els.setupForm.addEventListener("submit", generateFromForm);
+  els.resumeButton.addEventListener("click", restoreGame);
+  els.headerNewButton.addEventListener("click", showSetup);
+
+  els.prevClue.addEventListener("click", () => moveClue(-1));
+  els.nextClue.addEventListener("click", () => moveClue(1));
+
+  els.checkButton.addEventListener("click", checkPuzzle);
+  els.revealButton.addEventListener("click", revealLetter);
+  els.clearWordButton.addEventListener("click", clearActiveWord);
+
+  document.querySelectorAll("[data-key]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const key = button.dataset.key;
+      if (key === "BACKSPACE") backspace();
+      else enterLetter(key);
+    });
+  });
+
+  globalThis.addEventListener("keydown", handleHardwareKeyboard);
+  globalThis.addEventListener("pagehide", saveGame);
+
+  els.closeDialogButton.addEventListener("click", () => els.dialog.close());
   els.dialogNewButton.addEventListener("click", () => {
     els.dialog.close();
     showSetup();
   });
-  els.closeDialogButton.addEventListener("click", () => els.dialog.close());
-  els.checkButton.addEventListener("click", checkPuzzle);
-  els.revealButton.addEventListener("click", revealActiveCell);
-  els.clearButton.addEventListener("click", clearEntries);
-  globalThis.addEventListener("pagehide", saveGame);
 }
 
 function populateThemes() {
-  const themes = getAvailableThemes(bank);
-  const options = [
-    { value: ALL_THEMES, label: "Todos os temas", description: `${bank.length} termos disponíveis.` },
-    ...themes.map((theme) => ({
-      value: theme,
-      label: themeLabel(theme),
-      description: `${filterByTheme(bank, theme).length} termos disponíveis.`
-    }))
-  ];
+  els.themeSelect.replaceChildren();
 
-  els.themeOptions.replaceChildren();
-  options.forEach((option, index) => {
-    const label = document.createElement("label");
-    label.className = "choice-card";
+  const all = document.createElement("option");
+  all.value = ALL_THEMES;
+  all.textContent = "Todos os temas";
+  els.themeSelect.append(all);
 
-    const input = document.createElement("input");
-    input.type = "radio";
-    input.name = "theme";
-    input.value = option.value;
-    input.checked = index === 0;
-
-    const title = document.createElement("span");
-    title.className = "choice-title";
-    title.textContent = option.label;
-
-    const description = document.createElement("span");
-    description.className = "choice-description";
-    description.textContent = option.description;
-
-    label.append(input, title, description);
-    els.themeOptions.append(label);
-  });
+  for (const theme of getAvailableThemes(bank)) {
+    const option = document.createElement("option");
+    option.value = theme;
+    option.textContent = themeLabel(theme);
+    els.themeSelect.append(option);
+  }
 }
 
-function handleGenerate(event) {
+function generateFromForm(event) {
   event.preventDefault();
+
   const formData = new FormData(els.setupForm);
   const theme = formData.get("theme") || ALL_THEMES;
   const difficulty = Number(formData.get("difficulty")) || 2;
-  const available = filterByTheme(bank, theme).length;
+  const filtered = filterByTheme(bank, theme);
 
-  if (available < 8) {
-    setNotice(els.dataStatus, "Esse tema ainda não possui palavras suficientes para uma boa cruzadinha.", "error");
+  if (filtered.length < 8) {
+    setDataStatus("Esse tema ainda não possui palavras suficientes para uma boa cruzadinha.", "error");
     return;
   }
 
-  generatePuzzle(theme, difficulty);
+  startGeneration(filtered, {
+    theme,
+    themeLabel: theme === ALL_THEMES ? "Todos os temas" : themeLabel(theme),
+    difficulty
+  });
 }
 
-function generatePuzzle(theme, difficulty) {
+function startGeneration(words, meta) {
   stopWorker();
-  setGenerating(true);
-  setNotice(els.dataStatus, "Analisando cruzamentos e procurando uma grade compacta…", "warning");
 
-  const seed = secureSeed();
+  els.generateButton.disabled = true;
+  els.generateButton.textContent = "Gerando…";
+  setDataStatus("Montando uma grade compacta…", "warning");
+
   worker = new Worker(new URL("./crossword-worker.js", import.meta.url), { type: "module" });
 
   worker.addEventListener("message", (event) => {
     const message = event.data;
 
     if (message?.type === "progress") {
-      setNotice(
-        els.dataStatus,
-        `Gerando… melhor resultado: ${message.wordsPlaced} palavras e ${message.intersections ?? 0} cruzamentos.`,
-        "warning"
-      );
-      return;
-    }
-
-    if (message?.type === "result") {
-      setGenerating(false);
-      stopWorker();
-
-      if (!message.puzzle || message.puzzle.words.length < 6) {
-        setNotice(els.dataStatus, "Não encontrei uma grade boa com essa combinação. Tente gerar novamente.", "error");
-        return;
-      }
-
-      message.puzzle.meta = {
-        theme,
-        difficulty,
-        themeLabel: theme === ALL_THEMES ? "Todos os temas" : themeLabel(theme),
-        difficultyLabel: DIFFICULTY_LABELS[difficulty]
-      };
-
-      game = new CrosswordGame(message.puzzle);
-      completionAnnounced = false;
-      renderer.render(game);
-      updateGameHeader();
-      showGame();
-      saveGame();
+      const count = message.wordsPlaced || 0;
+      setDataStatus(`Montando… ${count} palavra(s) encaixadas até agora.`, "warning");
       return;
     }
 
     if (message?.type === "error") {
-      setGenerating(false);
-      stopWorker();
-      setNotice(els.dataStatus, message.message || "Não foi possível gerar a cruzadinha.", "error");
+      finishGeneration();
+      setDataStatus(message.message || "Não foi possível gerar a cruzadinha.", "error");
+      return;
+    }
+
+    if (message?.type === "result") {
+      finishGeneration();
+
+      puzzle = message.puzzle;
+      puzzle.meta = {
+        ...meta,
+        difficultyLabel: DIFFICULTY_LABELS[meta.difficulty] || "Médio"
+      };
+
+      beginPuzzle();
+      saveGame();
     }
   });
 
   worker.addEventListener("error", (error) => {
     console.error(error);
-    setGenerating(false);
-    stopWorker();
-    setNotice(els.dataStatus, "O gerador encontrou um erro inesperado. Veja o console do navegador.", "error");
+    finishGeneration();
+    setDataStatus("O gerador encontrou um erro inesperado.", "error");
   });
 
   worker.postMessage({
     type: "generate",
-    words: bank,
+    words,
     options: {
-      theme,
-      allThemesValue: ALL_THEMES,
-      difficulty,
-      seed,
       targetWords: TARGET_WORDS,
-      maxCandidates: 52,
-      timeBudgetMs: 1700
+      difficulty: meta.difficulty,
+      seed: secureSeed(),
+      timeBudgetMs: 2400
     }
   });
 }
 
-function handleCellKeydown(key, event) {
-  if (!game) return;
-
-  if (event.key === "Backspace") {
-    event.preventDefault();
-    const focusKey = game.backspace(key);
-    renderer.sync(game);
-    if (focusKey) renderer.focusCell(focusKey);
-    afterPlayerChange();
-    return;
-  }
-
-  if (event.key === "Enter" || event.key === " " || event.key === "Spacebar") {
-    const cell = game.getCell(key);
-    if (cell?.acrossId && cell?.downId) {
-      event.preventDefault();
-      game.toggleDirection();
-      renderer.sync(game);
-      scheduleSave();
-    }
-    return;
-  }
-
-  const moves = {
-    ArrowLeft: ["across", -1],
-    ArrowRight: ["across", 1],
-    ArrowUp: ["down", -1],
-    ArrowDown: ["down", 1]
-  };
-
-  const move = moves[event.key];
-  if (move) {
-    event.preventDefault();
-    const focusKey = game.moveByDirection(move[0], move[1]);
-    renderer.sync(game);
-    if (focusKey) renderer.focusCell(focusKey);
-    scheduleSave();
-  }
-}
-
-function checkPuzzle() {
-  if (!game) return;
-  const result = game.check();
-  renderer.sync(game);
-
-  if (result.complete) {
-    completePuzzle();
-  } else if (result.wrong > 0) {
-    setNotice(els.gameStatus, `${result.wrong} letra(s) preenchida(s) ainda estão incorretas.`, "error");
-  } else if (result.filled === 0) {
-    setNotice(els.gameStatus, "Preencha algumas casas antes de verificar.", "warning");
-  } else {
-    setNotice(els.gameStatus, "Tudo o que está preenchido até agora está correto.", "success");
-  }
-  scheduleSave();
-}
-
-function revealActiveCell() {
-  if (!game?.activeCellKey) {
-    setNotice(els.gameStatus, "Selecione uma casa antes de revelar uma letra.", "warning");
-    return;
-  }
-
-  game.revealActiveCell();
-  renderer.sync(game);
-  setNotice(els.gameStatus, "Uma letra foi revelada.", "warning");
-  afterPlayerChange();
-}
-
-function clearEntries() {
-  if (!game) return;
-  game.clear();
-  completionAnnounced = false;
-  renderer.sync(game);
-  setNotice(els.gameStatus, "Respostas apagadas.", "warning");
-  scheduleSave();
-}
-
-function afterPlayerChange() {
-  if (!game) return;
-  renderer.sync(game);
-  updateProgressNotice();
-  if (game.isSolved()) completePuzzle();
-  scheduleSave();
-}
-
-function updateProgressNotice() {
-  if (!game || game.isSolved()) return;
-  const solved = game.solvedWordCount();
-  setNotice(els.gameStatus, `${solved} de ${game.puzzle.words.length} palavras concluídas.`, "neutral");
-}
-
-function completePuzzle() {
-  if (!game || completionAnnounced) return;
-  completionAnnounced = true;
-  game.incorrect.clear();
-  renderer.sync(game);
-  setNotice(els.gameStatus, "Cruzadinha concluída.", "success");
-  els.completeText.textContent = `${game.puzzle.words.length} palavras concluídas. ${game.revealed.size ? `${game.revealed.size} letra(s) foram reveladas.` : "Nenhuma letra foi revelada."}`;
-  saveGame();
-  if (typeof els.dialog.showModal === "function" && !els.dialog.open) els.dialog.showModal();
-}
-
-function updateGameHeader() {
-  if (!game) return;
-  const meta = game.puzzle.meta || {};
-  els.gameKicker.textContent = `${meta.themeLabel || "História"} · ${meta.difficultyLabel || "Médio"}`;
-  els.gameSummary.textContent = `${game.puzzle.words.length} palavras · ${game.puzzle.stats.intersections} cruzamentos · densidade ${Math.round(game.puzzle.stats.density * 100)}%`;
-  updateProgressNotice();
-}
-
-function showGame() {
-  els.setupView.hidden = true;
-  els.gameView.hidden = false;
-  globalThis.scrollTo({ top: 0, behavior: prefersReducedMotion() ? "auto" : "smooth" });
-  const key = game?.activeCellKey;
-  if (key) requestAnimationFrame(() => renderer.focusCell(key));
-}
-
-function showSetup() {
+function finishGeneration() {
   stopWorker();
-  setGenerating(false);
-  els.gameView.hidden = true;
-  els.setupView.hidden = false;
-  updateResumeButton();
-  globalThis.scrollTo({ top: 0, behavior: prefersReducedMotion() ? "auto" : "smooth" });
-}
-
-function setGenerating(isGenerating) {
-  els.generateButton.disabled = isGenerating;
-  els.generateButton.textContent = isGenerating ? "Gerando…" : "Gerar cruzadinha";
+  els.generateButton.disabled = false;
+  els.generateButton.textContent = "Gerar cruzadinha";
 }
 
 function stopWorker() {
@@ -408,64 +226,414 @@ function stopWorker() {
   }
 }
 
-function saveGame() {
-  if (!game) return;
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({
-      version: STATE_VERSION,
-      puzzle: game.puzzle,
-      state: game.serialize()
-    }));
-  } catch (error) {
-    console.warn("Não foi possível salvar a partida no localStorage.", error);
+function beginPuzzle(saved = null) {
+  rebuildIndexes();
+
+  entries = saved?.entries || {};
+  revealed = new Set(saved?.revealed || []);
+  incorrect = new Set();
+  completionShown = false;
+
+  const firstWord = puzzle.words.slice().sort(sortWords)[0];
+  activeWordId = saved?.activeWordId && wordsById.has(saved.activeWordId)
+    ? saved.activeWordId
+    : firstWord?.id ?? null;
+
+  const firstKey = activeWordId != null ? wordKeysById.get(activeWordId)?.[0] : null;
+  activeCellKey = saved?.activeCellKey && cellsByKey.has(saved.activeCellKey)
+    ? saved.activeCellKey
+    : firstKey ?? null;
+
+  renderGrid();
+  renderState();
+  showGame();
+}
+
+function rebuildIndexes() {
+  cellsByKey = new Map();
+  wordsById = new Map();
+  wordKeysById = new Map();
+
+  for (const cell of puzzle.cells) {
+    cellsByKey.set(keyOf(cell.row, cell.col), cell);
+  }
+
+  for (const word of puzzle.words) {
+    wordsById.set(word.id, word);
+
+    const dr = word.direction === "down" ? 1 : 0;
+    const dc = word.direction === "across" ? 1 : 0;
+    const keys = [];
+
+    for (let i = 0; i < word.answer.length; i += 1) {
+      keys.push(keyOf(word.row + dr * i, word.col + dc * i));
+    }
+
+    wordKeysById.set(word.id, keys);
   }
 }
 
-function scheduleSave() {
-  clearTimeout(saveTimer);
-  saveTimer = setTimeout(saveGame, 120);
+function renderGrid() {
+  cellButtons = new Map();
+  els.grid.replaceChildren();
+  els.grid.style.setProperty("--cols", puzzle.cols);
+
+  for (let row = 0; row < puzzle.rows; row += 1) {
+    for (let col = 0; col < puzzle.cols; col += 1) {
+      const key = keyOf(row, col);
+      const cell = cellsByKey.get(key);
+
+      if (!cell) {
+        const block = document.createElement("div");
+        block.className = "block-cell";
+        block.setAttribute("aria-hidden", "true");
+        els.grid.append(block);
+        continue;
+      }
+
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "grid-cell";
+      button.dataset.key = key;
+      button.setAttribute("role", "gridcell");
+
+      if (cell.number) {
+        const number = document.createElement("span");
+        number.className = "cell-number";
+        number.textContent = cell.number;
+        button.append(number);
+      }
+
+      const letter = document.createElement("span");
+      letter.className = "cell-letter";
+      button.append(letter);
+
+      button.addEventListener("click", () => selectCell(key));
+
+      els.grid.append(button);
+      cellButtons.set(key, button);
+    }
+  }
 }
 
-function loadSavedGame() {
+function renderState() {
+  if (!puzzle) return;
+
+  const activeWord = wordsById.get(activeWordId);
+  const activeKeys = new Set(activeWord ? wordKeysById.get(activeWord.id) : []);
+  const solvedWords = new Set(
+    puzzle.words.filter((word) => wordIsSolved(word.id)).map((word) => word.id)
+  );
+
+  for (const [key, button] of cellButtons) {
+    const cell = cellsByKey.get(key);
+    const letterEl = button.querySelector(".cell-letter");
+    letterEl.textContent = entries[key] || "";
+
+    button.classList.toggle("active-word", activeKeys.has(key));
+    button.classList.toggle("active-cell", key === activeCellKey);
+    button.classList.toggle("incorrect", incorrect.has(key));
+
+    const memberships = [cell.acrossId, cell.downId].filter((id) => id != null);
+    button.classList.toggle(
+      "correct-word",
+      memberships.length > 0 && memberships.every((id) => solvedWords.has(id))
+    );
+
+    button.setAttribute("aria-label", accessibleCellLabel(cell, key));
+    button.setAttribute("aria-pressed", key === activeCellKey ? "true" : "false");
+  }
+
+  if (activeWord) {
+    els.clueLabel.textContent = `${activeWord.direction === "across" ? "H" : "V"}${activeWord.number}`;
+    els.clueText.textContent = activeWord.clue;
+  } else {
+    els.clueLabel.textContent = "";
+    els.clueText.textContent = "Selecione uma palavra.";
+  }
+
+  const solved = puzzle.words.filter((word) => wordIsSolved(word.id)).length;
+  els.progressText.textContent = `${solved}/${puzzle.words.length}`;
+
+  const meta = puzzle.meta || {};
+  els.gameKicker.textContent =
+    `${meta.themeLabel || "História"} · ${meta.difficultyLabel || "Médio"} · ${puzzle.cols}×${puzzle.rows}`;
+
+  saveGame();
+
+  if (solved === puzzle.words.length && !completionShown) {
+    completionShown = true;
+    setGameStatus("Cruzadinha concluída.", "success");
+    els.completeText.textContent =
+      `${puzzle.words.length} palavras concluídas${revealed.size ? `, com ${revealed.size} letra(s) revelada(s).` : "."}`;
+    if (typeof els.dialog.showModal === "function" && !els.dialog.open) {
+      els.dialog.showModal();
+    }
+  }
+}
+
+function selectCell(key) {
+  const cell = cellsByKey.get(key);
+  if (!cell) return;
+
+  const candidates = [cell.acrossId, cell.downId].filter((id) => id != null);
+
+  if (key === activeCellKey && candidates.length === 2 && candidates.includes(activeWordId)) {
+    activeWordId = candidates.find((id) => id !== activeWordId);
+  } else if (candidates.includes(activeWordId)) {
+    // Mantém a direção atual quando a casa pertence à palavra ativa.
+  } else {
+    const currentDirection = wordsById.get(activeWordId)?.direction;
+    const sameDirection = candidates.find((id) => wordsById.get(id)?.direction === currentDirection);
+    activeWordId = sameDirection ?? candidates[0] ?? null;
+  }
+
+  activeCellKey = key;
+  incorrect.delete(key);
+  renderState();
+}
+
+function moveClue(delta) {
+  if (!puzzle?.words?.length) return;
+
+  const ordered = puzzle.words.slice().sort(sortWords);
+  let index = ordered.findIndex((word) => word.id === activeWordId);
+  if (index < 0) index = 0;
+
+  index = (index + delta + ordered.length) % ordered.length;
+  activeWordId = ordered[index].id;
+  activeCellKey = wordKeysById.get(activeWordId)?.[0] || activeCellKey;
+  renderState();
+  cellButtons.get(activeCellKey)?.scrollIntoView({ block: "nearest", inline: "nearest" });
+}
+
+function enterLetter(raw) {
+  if (!puzzle || !activeWordId || !activeCellKey) return;
+
+  const letter = String(raw || "").toUpperCase().replace(/[^A-Z]/g, "").slice(0, 1);
+  if (!letter) return;
+
+  entries[activeCellKey] = letter;
+  incorrect.delete(activeCellKey);
+
+  const keys = wordKeysById.get(activeWordId) || [];
+  const index = keys.indexOf(activeCellKey);
+
+  if (index >= 0 && index < keys.length - 1) {
+    activeCellKey = keys[index + 1];
+  }
+
+  renderState();
+}
+
+function backspace() {
+  if (!puzzle || !activeWordId || !activeCellKey) return;
+
+  const keys = wordKeysById.get(activeWordId) || [];
+  let index = keys.indexOf(activeCellKey);
+
+  if (entries[activeCellKey]) {
+    delete entries[activeCellKey];
+    incorrect.delete(activeCellKey);
+  } else if (index > 0) {
+    activeCellKey = keys[index - 1];
+    delete entries[activeCellKey];
+    incorrect.delete(activeCellKey);
+  }
+
+  renderState();
+}
+
+function clearActiveWord() {
+  if (!activeWordId) return;
+
+  for (const key of wordKeysById.get(activeWordId) || []) {
+    if (!revealed.has(key)) delete entries[key];
+    incorrect.delete(key);
+  }
+
+  setGameStatus("Palavra apagada.", "neutral");
+  renderState();
+}
+
+function revealLetter() {
+  if (!activeCellKey) return;
+
+  const cell = cellsByKey.get(activeCellKey);
+  if (!cell) return;
+
+  entries[activeCellKey] = cell.letter;
+  revealed.add(activeCellKey);
+  incorrect.delete(activeCellKey);
+
+  const keys = wordKeysById.get(activeWordId) || [];
+  const index = keys.indexOf(activeCellKey);
+  if (index >= 0 && index < keys.length - 1) activeCellKey = keys[index + 1];
+
+  setGameStatus("Uma letra foi revelada.", "neutral");
+  renderState();
+}
+
+function checkPuzzle() {
+  if (!puzzle) return;
+
+  incorrect.clear();
+  let filled = 0;
+
+  for (const [key, cell] of cellsByKey) {
+    if (!entries[key]) continue;
+    filled += 1;
+    if (entries[key] !== cell.letter) incorrect.add(key);
+  }
+
+  if (filled === 0) {
+    setGameStatus("Preencha algumas casas antes de verificar.", "neutral");
+  } else if (incorrect.size) {
+    setGameStatus(`${incorrect.size} letra(s) preenchida(s) ainda estão incorretas.`, "error");
+  } else if (puzzle.words.every((word) => wordIsSolved(word.id))) {
+    setGameStatus("Tudo correto.", "success");
+  } else {
+    setGameStatus("Tudo o que foi preenchido até agora está correto.", "success");
+  }
+
+  renderState();
+}
+
+function wordIsSolved(wordId) {
+  const word = wordsById.get(wordId);
+  const keys = wordKeysById.get(wordId);
+  if (!word || !keys) return false;
+
+  for (let i = 0; i < keys.length; i += 1) {
+    if (entries[keys[i]] !== word.answer[i]) return false;
+  }
+  return true;
+}
+
+function accessibleCellLabel(cell, key) {
+  const parts = [`Linha ${cell.row + 1}, coluna ${cell.col + 1}`];
+
+  if (cell.number) parts.push(`número ${cell.number}`);
+  if (cell.acrossId) parts.push(`horizontal ${wordsById.get(cell.acrossId)?.number ?? ""}`);
+  if (cell.downId) parts.push(`vertical ${wordsById.get(cell.downId)?.number ?? ""}`);
+  if (entries[key]) parts.push(`letra ${entries[key]}`);
+
+  return parts.join(", ");
+}
+
+function handleHardwareKeyboard(event) {
+  if (els.gameView.hidden || event.ctrlKey || event.metaKey || event.altKey) return;
+
+  if (/^[a-zA-Z]$/.test(event.key)) {
+    event.preventDefault();
+    enterLetter(event.key);
+    return;
+  }
+
+  if (event.key === "Backspace" || event.key === "Delete") {
+    event.preventDefault();
+    backspace();
+    return;
+  }
+
+  if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+    event.preventDefault();
+    moveWithinWord(1);
+    return;
+  }
+
+  if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+    event.preventDefault();
+    moveWithinWord(-1);
+  }
+}
+
+function moveWithinWord(delta) {
+  const keys = wordKeysById.get(activeWordId) || [];
+  let index = keys.indexOf(activeCellKey);
+  if (index < 0) index = 0;
+  index = Math.max(0, Math.min(keys.length - 1, index + delta));
+  activeCellKey = keys[index];
+  renderState();
+}
+
+function showGame() {
+  els.setupView.hidden = true;
+  els.gameView.hidden = false;
+  els.headerNewButton.hidden = false;
+  globalThis.scrollTo({ top: 0, behavior: "auto" });
+}
+
+function showSetup() {
+  stopWorker();
+  els.gameView.hidden = true;
+  els.setupView.hidden = false;
+  els.headerNewButton.hidden = true;
+  updateResumeButton();
+  globalThis.scrollTo({ top: 0, behavior: "auto" });
+}
+
+function setDataStatus(text, state = "neutral") {
+  els.dataStatus.textContent = text;
+  els.dataStatus.dataset.state = state;
+}
+
+function setGameStatus(text, state = "neutral") {
+  els.gameStatus.textContent = text;
+  els.gameStatus.dataset.state = state;
+}
+
+function saveGame() {
+  if (!puzzle) return;
+
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      version: 3,
+      puzzle,
+      entries,
+      revealed: [...revealed],
+      activeWordId,
+      activeCellKey
+    }));
+  } catch (error) {
+    console.warn("Não foi possível salvar a partida.", error);
+  }
+}
+
+function updateResumeButton() {
+  els.resumeButton.hidden = !loadSaved();
+}
+
+function loadSaved() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
-    const saved = JSON.parse(raw);
-    if (saved?.version !== STATE_VERSION || !saved?.puzzle?.words?.length) return null;
-    return saved;
+    const parsed = JSON.parse(raw);
+    if (parsed?.version !== 3 || !parsed?.puzzle?.words?.length) return null;
+    return parsed;
   } catch {
     return null;
   }
 }
 
-function updateResumeButton() {
-  els.resumeButton.hidden = !loadSavedGame();
-}
-
-function restoreSavedGame() {
-  const saved = loadSavedGame();
+function restoreGame() {
+  const saved = loadSaved();
   if (!saved) {
     updateResumeButton();
     return;
   }
 
-  try {
-    game = new CrosswordGame(saved.puzzle, saved.state);
-    completionAnnounced = game.isSolved();
-    renderer.render(game);
-    updateGameHeader();
-    showGame();
-  } catch (error) {
-    console.error(error);
-    localStorage.removeItem(STORAGE_KEY);
-    updateResumeButton();
-    setNotice(els.dataStatus, "A partida salva estava corrompida e foi descartada.", "error");
-  }
+  puzzle = saved.puzzle;
+  beginPuzzle(saved);
 }
 
-function setNotice(element, text, state = "neutral") {
-  element.textContent = text;
-  element.dataset.state = state;
+function sortWords(a, b) {
+  return a.number - b.number ||
+    (a.direction === "across" ? -1 : 1);
+}
+
+function keyOf(row, col) {
+  return `${row},${col}`;
 }
 
 function secureSeed() {
@@ -475,8 +643,4 @@ function secureSeed() {
     return array[0];
   }
   return Math.floor(Math.random() * 0xffffffff);
-}
-
-function prefersReducedMotion() {
-  return globalThis.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false;
 }

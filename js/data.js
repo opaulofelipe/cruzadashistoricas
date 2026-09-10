@@ -2,7 +2,7 @@ import { validateBank } from "./validator.js";
 
 export const ALL_THEMES = "__ALL__";
 
-export const THEME_LABELS = new Map([
+const THEME_LABELS = new Map([
   ["Pré-História", "Pré-História"],
   ["Antiguidade", "História Antiga"],
   ["Idade Média", "História Medieval"],
@@ -11,7 +11,7 @@ export const THEME_LABELS = new Map([
   ["História do Brasil", "História do Brasil"]
 ]);
 
-export const THEME_ORDER = [
+const THEME_ORDER = [
   "Pré-História",
   "Antiguidade",
   "Idade Média",
@@ -29,8 +29,7 @@ export const DIFFICULTY_LABELS = {
 export async function loadWordBank(url = "./palavras.json") {
   const response = await fetch(url, { cache: "no-store" });
   if (!response.ok) throw new Error(`Falha ao carregar ${url}: HTTP ${response.status}`);
-  const raw = await response.json();
-  return validateBank(raw);
+  return validateBank(await response.json());
 }
 
 export function themeLabel(theme) {
@@ -38,8 +37,7 @@ export function themeLabel(theme) {
 }
 
 export function getAvailableThemes(bank) {
-  const themes = [...new Set(bank.map((word) => word.tema))];
-  return themes.sort((a, b) => {
+  return [...new Set(bank.map((word) => word.tema))].sort((a, b) => {
     const ia = THEME_ORDER.indexOf(a);
     const ib = THEME_ORDER.indexOf(b);
     if (ia !== -1 || ib !== -1) {
