@@ -70,8 +70,8 @@ function meetsQualityTarget(puzzle, targetWords) {
   return (
     puzzle.words.length >= targetWords &&
     puzzle.stats.intersections >= Math.max(6, Math.floor(targetWords * 0.5)) &&
-    puzzle.stats.density >= 0.36 &&
-    puzzle.stats.aspect <= 2.35
+    puzzle.stats.density >= 0.34 &&
+    puzzle.stats.aspect <= 2.0
   );
 }
 
@@ -307,8 +307,8 @@ function scorePlacement(bounds, word, row, col, direction, intersections) {
 
   return (
     intersections * 150 -
-    growth * 2.0 -
-    Math.max(0, aspect - 1.65) * 28 -
+    growth * 3.2 -
+    Math.max(0, aspect - 1.55) * 46 -
     centerDistance * 0.45
   );
 }
@@ -384,9 +384,9 @@ function stateStats(cells, placed) {
     placed.length * 100000 +
     intersections * 520 +
     multiCrossWords * 160 +
-    density * 2800 -
-    area * 3.2 -
-    Math.max(0, aspect - 1.5) * 550;
+    density * 4400 -
+    area * 4.8 -
+    Math.max(0, aspect - 1.45) * 820;
 
   return {
     intersections,

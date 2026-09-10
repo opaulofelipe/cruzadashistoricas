@@ -5,6 +5,14 @@ export class CrosswordRenderer {
     this.cellInputs = new Map();
     this.cellWrappers = new Map();
     this.clueButtons = new Map();
+
+    // Mantém a grade legível e proporcional em qualquer largura de tela.
+    this.resizeObserver = typeof ResizeObserver !== "undefined"
+      ? new ResizeObserver(() => this.fitBoard())
+      : null;
+
+    this.resizeObserver?.observe(this.els.boardScroll);
+    globalThis.addEventListener?.("resize", () => this.fitBoard(), { passive: true });
   }
 
   render(game) {
@@ -72,6 +80,33 @@ export class CrosswordRenderer {
     this.renderClues("across", this.els.acrossClues, game);
     this.renderClues("down", this.els.downClues, game);
     this.sync(game);
+
+    // Aguarda o layout existir antes de calcular o tamanho das casas.
+    requestAnimationFrame(() => this.fitBoard());
+  }
+
+  fitBoard() {
+    const puzzle = this.game?.puzzle;
+    const scroller = this.els.boardScroll;
+    if (!puzzle || !scroller?.clientWidth) return;
+
+    const styles = getComputedStyle(scroller);
+    const padding =
+      (parseFloat(styles.paddingLeft) || 0) +
+      (parseFloat(styles.paddingRight) || 0);
+
+    const gridStyles = getComputedStyle(this.els.grid);
+    const gap = parseFloat(gridStyles.columnGap) || 0;
+    const available = Math.max(0, scroller.clientWidth - padding - 2);
+    const fit = Math.floor((available - gap * Math.max(0, puzzle.cols - 1)) / puzzle.cols);
+
+    const compactScreen = globalThis.matchMedia?.("(max-width: 560px)")?.matches ?? false;
+    const minCell = compactScreen ? 20 : 26;
+    const maxCell = compactScreen ? 38 : 46;
+    const cellSize = Math.max(minCell, Math.min(maxCell, fit));
+
+    this.els.grid.style.setProperty("--cell-size", `${cellSize}px`);
+    this.els.grid.classList.toggle("is-overflowing", fit < minCell);
   }
 
   renderClues(direction, container, game) {
