@@ -27,9 +27,19 @@ export const DIFFICULTY_LABELS = {
 };
 
 export async function loadWordBank(url = "./palavras.json") {
-  const response = await fetch(url, { cache: "no-store" });
-  if (!response.ok) throw new Error(`Falha ao carregar ${url}: HTTP ${response.status}`);
-  return validateBank(await response.json());
+  const response = await fetch(url, {
+    cache: "no-store"
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `Falha ao carregar ${url}: HTTP ${response.status}`
+    );
+  }
+
+  const raw = await response.json();
+
+  return validateBank(raw);
 }
 
 export function themeLabel(theme) {
@@ -37,18 +47,60 @@ export function themeLabel(theme) {
 }
 
 export function getAvailableThemes(bank) {
-  return [...new Set(bank.map((word) => word.tema))].sort((a, b) => {
+  /*
+   * "Coringa" é uma categoria interna.
+   *
+   * As palavras desse grupo podem aparecer em qualquer
+   * cruzadinha, mas o jogador não verá "Coringa" como
+   * uma opção de tema.
+   */
+  const themes = [
+    ...new Set(
+      bank
+        .filter((word) => word.tema !== "Coringa")
+        .map((word) => word.tema)
+    )
+  ];
+
+  return themes.sort((a, b) => {
     const ia = THEME_ORDER.indexOf(a);
     const ib = THEME_ORDER.indexOf(b);
+
     if (ia !== -1 || ib !== -1) {
       if (ia === -1) return 1;
       if (ib === -1) return -1;
+
       return ia - ib;
     }
-    return themeLabel(a).localeCompare(themeLabel(b), "pt-BR");
+
+    return themeLabel(a).localeCompare(
+      themeLabel(b),
+      "pt-BR"
+    );
   });
 }
 
 export function filterByTheme(bank, theme) {
-  return theme === ALL_THEMES ? bank : bank.filter((word) => word.tema === theme);
+  /*
+   * Quando o jogador escolhe "Todos os temas",
+   * todo o banco continua disponível.
+   */
+  if (theme === ALL_THEMES) {
+    return bank;
+  }
+
+  /*
+   * Para qualquer tema específico:
+   *
+   * 1. usa palavras do período escolhido;
+   * 2. acrescenta as palavras do grupo Coringa.
+   *
+   * Dessa forma, ERA, ATO, LEI, siglas de historiadores,
+   * etc. podem servir de ligação entre palavras maiores.
+   */
+  return bank.filter(
+    (word) =>
+      word.tema === theme ||
+      word.tema === "Coringa"
+  );
 }
