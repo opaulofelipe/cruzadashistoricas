@@ -15,12 +15,13 @@ export function generateCrossword(allWords, options = {}, onProgress = () => {})
     allThemesValue = "__ALL__",
     difficulty = 2,
     seed = Date.now(),
-    targetWords = 18,
-    maxCandidates = 72,
-    timeBudgetMs = 3400,
-    perAttemptMs = 430,
+    targetWords = 22,
+    maxCandidates = 96,
+    timeBudgetMs = 5600,
+    perAttemptMs = 800,
     maxCols = 13,
-    maxRows = 17
+    maxRows = 17,
+    maxFinalWords = 26
   } = options;
 
   const rng = makeRng(seed >>> 0);
@@ -30,17 +31,33 @@ export function generateCrossword(allWords, options = {}, onProgress = () => {})
   );
   if (filtered.length < 6) throw new Error("Poucas palavras disponíveis para esse tema.");
 
-  // O orçamento global pertence ao processo inteiro. Cada tentativa recebe seu
-  // próprio prazo curto; assim há vários reinícios com sementes/ordens diferentes.
-  const globalDeadline = now() + Math.max(900, timeBudgetMs);
+  // Para uma grade mais densa, o núcleo prioriza respostas de até 10 letras.
+  // Palavras muito longas consomem várias casas sem criar cruzamentos suficientes.
+  // Se um tema tiver poucas respostas curtas, ampliamos automaticamente até 13.
+  const compactWords = filtered.filter((word) => word.resposta.length <= 10);
+  const mediumWords = filtered.filter((word) => word.resposta.length <= 13);
+  const searchWords = compactWords.length >= Math.max(48, targetWords * 2)
+    ? compactWords
+    : mediumWords.length >= Math.max(36, targetWords + 10)
+      ? mediumWords
+      : filtered;
+
+  // A geração ocorre em duas etapas. Primeiro montamos um núcleo bem conectado.
+  // Depois congelamos a moldura encontrada e fazemos uma segunda busca apenas para
+  // preencher os espaços internos. Essa fase funciona como um template dinâmico:
+  // a grade vem antes das últimas palavras, reduzindo grandes áreas pretas.
+  const startedAt = now();
+  const totalBudget = Math.max(1800, timeBudgetMs);
+  const coreDeadline = startedAt + totalBudget * 0.86;
+  const globalDeadline = startedAt + totalBudget;
   let best = null;
   let attempt = 0;
   let lastProgress = 0;
 
-  while (now() < globalDeadline) {
+  while (now() < coreDeadline) {
     attempt += 1;
 
-    const candidates = buildCandidatePool(filtered, difficulty, maxCandidates, rng);
+    const candidates = buildCandidatePool(searchWords, difficulty, maxCandidates, rng);
     if (candidates.length < 6) break;
 
     const compatibility = compatibilityScores(candidates);
@@ -58,9 +75,9 @@ export function generateCrossword(allWords, options = {}, onProgress = () => {})
     placeWord(grid, placed, seedWord, 0, 0, "across");
 
     const remaining = candidates.filter((word) => word.id !== seedWord.id);
-    const remainingGlobalMs = Math.max(0, globalDeadline - now());
+    const remainingGlobalMs = Math.max(0, coreDeadline - now());
     const attemptDeadline = Math.min(
-      globalDeadline,
+      coreDeadline,
       now() + Math.min(perAttemptMs, Math.max(120, remainingGlobalMs))
     );
 
@@ -69,7 +86,7 @@ export function generateCrossword(allWords, options = {}, onProgress = () => {})
       nodes: 0,
       target: Math.min(targetWords, candidates.length),
       deadline: attemptDeadline,
-      maxNodes: 6500,
+      maxNodes: 14000,
       maxCols,
       maxRows
     };
@@ -93,6 +110,21 @@ export function generateCrossword(allWords, options = {}, onProgress = () => {})
   }
 
   if (!best) throw new Error("Não foi possível criar uma grade conectada.");
+
+  // Segunda etapa: trata o retângulo obtido como um template e tenta preenchê-lo
+  // com palavras adicionais, favorecendo encaixes que não aumentem a moldura.
+  // É aqui que os coringas curtos passam a ser especialmente úteis.
+  if (now() < globalDeadline && best.words.length < maxFinalWords) {
+    const densePool = buildDensePool(filtered, difficulty);
+    best = densifyPuzzle(best, densePool, {
+      maxWords: Math.max(targetWords, maxFinalWords),
+      maxCols,
+      maxRows,
+      deadline: globalDeadline,
+      rng
+    });
+  }
+
   return best;
 }
 
@@ -113,7 +145,7 @@ function buildCandidatePool(words, difficulty, limit, rng) {
     const diffWeight = difficultyWeight(word.dificuldade, difficulty);
     const length = word.resposta.length;
     const lengthWeight = wordLengthWeight(length);
-    const wildcardWeight = word.tema === "Coringa" ? 1.18 : 1;
+    const wildcardWeight = word.tema === "Coringa" ? 1.08 : 1;
     const randomKey = -Math.log(Math.max(1e-9, rng())) /
       Math.max(0.02, diffWeight * lengthWeight * wildcardWeight);
 
@@ -129,29 +161,69 @@ function buildCandidatePool(words, difficulty, limit, rng) {
     };
   });
 
-  weighted.sort((a, b) => a.key - b.key);
-  return weighted.slice(0, Math.min(limit, weighted.length));
+  const themed = weighted.filter((word) => word.theme !== "Coringa").sort((a, b) => a.key - b.key);
+  const fillers = weighted.filter((word) => word.theme === "Coringa").sort((a, b) => a.key - b.key);
+
+  // O banco coringa é grande de propósito, mas não pode dominar o conteúdo.
+  // Aproximadamente 1/3 do conjunto de busca fica reservado aos conectores.
+  const fillerTarget = Math.min(fillers.length, Math.max(14, Math.floor(limit * 0.34)));
+  const themedTarget = Math.min(themed.length, Math.max(0, limit - fillerTarget));
+  const selected = [
+    ...themed.slice(0, themedTarget),
+    ...fillers.slice(0, fillerTarget)
+  ];
+
+  if (selected.length < limit) {
+    const used = new Set(selected.map((word) => word.id));
+    const rest = weighted
+      .filter((word) => !used.has(word.id))
+      .sort((a, b) => a.key - b.key);
+    selected.push(...rest.slice(0, limit - selected.length));
+  }
+
+  return selected;
+}
+
+function buildDensePool(words, difficulty) {
+  return words
+    .filter((word) => word.resposta.length >= 3 && word.resposta.length <= 17)
+    .map((word) => ({
+      id: word.id,
+      answer: word.resposta,
+      display: word.exibicao,
+      clue: word.dica,
+      theme: word.tema,
+      subtheme: word.subtema,
+      difficulty: word.dificuldade,
+      denseWeight:
+        difficultyWeight(word.dificuldade, difficulty) *
+        (word.tema === "Coringa" ? 1.30 : 1) *
+        (word.resposta.length <= 7 ? 1.18 : 1)
+    }))
+    .sort((a, b) => b.denseWeight - a.denseWeight || a.answer.length - b.answer.length);
 }
 
 function difficultyWeight(wordDifficulty, selectedDifficulty) {
   const matrix = {
-    1: { 1: 1.0, 2: 0.30, 3: 0.07 },
-    2: { 1: 0.42, 2: 1.0, 3: 0.38 },
-    3: { 1: 0.12, 2: 0.48, 3: 1.0 }
+    1: { 1: 1.0, 2: 0.68, 3: 0.36 },
+    2: { 1: 0.82, 2: 1.0, 3: 0.72 },
+    3: { 1: 0.48, 2: 0.78, 3: 1.0 }
   };
   return matrix[selectedDifficulty]?.[wordDifficulty] ?? 0.5;
 }
 
 function wordLengthWeight(length) {
-  // Palavras muito grandes continuam possíveis, mas não dominam o conjunto.
-  // A faixa 5–15 tende a produzir grades com mais interligações.
-  if (length <= 3) return 1.35;
-  if (length <= 5) return 1.55;
-  if (length >= 32) return 0.13;
-  if (length >= 27) return 0.23;
-  if (length >= 22) return 0.40;
-  if (length >= 17) return 0.68;
-  return 1;
+  // Para uma cruzadinha densa, respostas curtas e médias são muito mais úteis.
+  // As longas continuam possíveis, mas deixam de dominar o conjunto candidato.
+  if (length <= 3) return 1.55;
+  if (length <= 5) return 1.72;
+  if (length <= 8) return 1.38;
+  if (length <= 10) return 1.18;
+  if (length <= 12) return 0.92;
+  if (length <= 14) return 0.70;
+  if (length <= 17) return 0.52;
+  if (length <= 21) return 0.30;
+  return 0.14;
 }
 
 function compatibilityScores(words) {
@@ -208,7 +280,7 @@ function search(grid, placed, remaining, holder, rng, skipsLeft) {
       if (b.overlapPotential !== a.overlapPotential) return b.overlapPotential - a.overlapPotential;
       return a.word.answer.length - b.word.answer.length;
     })
-    .slice(0, 28);
+    .slice(0, 40);
 
   if (!likely.length) return;
 
@@ -240,7 +312,7 @@ function search(grid, placed, remaining, holder, rng, skipsLeft) {
   // chegar a 15–18 palavras sem transformar a grade em uma simples "árvore".
   infos.sort((a, b) => candidateChoiceScore(b) - candidateChoiceScore(a));
 
-  const wordChoiceLimit = Math.min(3, infos.length);
+  const wordChoiceLimit = Math.min(4, infos.length);
 
   for (let wordIndex = 0; wordIndex < wordChoiceLimit; wordIndex += 1) {
     if (now() >= holder.deadline || holder.nodes >= holder.maxNodes) return;
@@ -258,7 +330,7 @@ function search(grid, placed, remaining, holder, rng, skipsLeft) {
       return (b.score + bi + rng() * 5) - (a.score + ai + rng() * 5);
     });
 
-    const placementLimit = Math.min(9, chosen.placements.length);
+    const placementLimit = Math.min(12, chosen.placements.length);
     const rest = remaining.filter((word) => word.id !== chosen.word.id);
 
     for (let i = 0; i < placementLimit; i += 1) {
@@ -517,6 +589,204 @@ function countWordsWithMultipleCrosses(cells, placed) {
     }
   }
   return [...counts.values()].filter((count) => count >= 2).length;
+}
+
+function densifyPuzzle(puzzle, pool, options) {
+  const grid = new Map();
+  for (const cell of puzzle.cells) {
+    grid.set(keyOf(cell.row, cell.col), {
+      row: cell.row,
+      col: cell.col,
+      letter: cell.letter,
+      acrossId: cell.acrossId ?? null,
+      downId: cell.downId ?? null
+    });
+  }
+
+  const placed = puzzle.words.map((word) => ({
+    id: word.id,
+    answer: word.answer,
+    display: word.display,
+    clue: word.clue,
+    theme: word.theme,
+    subtheme: word.subtheme,
+    difficulty: word.difficulty,
+    row: word.row,
+    col: word.col,
+    direction: word.direction
+  }));
+
+  const used = new Set(placed.map((word) => word.id));
+  const remaining = pool.filter((word) => !used.has(word.id));
+
+  const holder = {
+    best: snapshotState(grid, placed),
+    nodes: 0,
+    maxNodes: 9000,
+    deadline: options.deadline,
+    maxWords: options.maxWords,
+    maxCols: options.maxCols,
+    maxRows: options.maxRows
+  };
+
+  denseFillSearch(grid, placed, remaining, holder, options.rng, 0);
+  return finalizeSnapshot(holder.best, puzzle.seed, puzzle.selectedDifficulty);
+}
+
+function denseFillSearch(grid, placed, remaining, holder, rng, depth) {
+  holder.nodes += 1;
+
+  const current = snapshotState(grid, placed);
+  if (isBetterDenseState(current, holder.best)) holder.best = current;
+
+  if (
+    placed.length >= holder.maxWords ||
+    remaining.length === 0 ||
+    holder.nodes >= holder.maxNodes ||
+    now() >= holder.deadline
+  ) return;
+
+  const bounds = getBounds(grid);
+  const currentArea = bounds.width * bounds.height;
+  const currentDensity = grid.size / Math.max(1, currentArea);
+  const gridLetters = new Set([...grid.values()].map((cell) => cell.letter));
+
+  const likely = remaining
+    .map((word) => ({
+      word,
+      overlapPotential: countSharedLetters(word.answer, gridLetters)
+    }))
+    .filter((item) => item.overlapPotential > 0 && item.word.answer.length <= 13)
+    .sort((a, b) => {
+      const aShort = a.word.answer.length <= 7 ? 1 : 0;
+      const bShort = b.word.answer.length <= 7 ? 1 : 0;
+      return (
+        bShort - aShort ||
+        b.overlapPotential - a.overlapPotential ||
+        b.word.denseWeight - a.word.denseWeight ||
+        a.word.answer.length - b.word.answer.length
+      );
+    })
+    .slice(0, 42);
+
+  const choices = [];
+
+  for (const item of likely) {
+    if (now() >= holder.deadline) return;
+
+    const placements = findPlacements(
+      grid,
+      item.word,
+      holder.maxCols,
+      holder.maxRows
+    );
+
+    const scored = [];
+    for (const placement of placements) {
+      const quality = densePlacementQuality(
+        grid,
+        bounds,
+        currentDensity,
+        item.word,
+        placement
+      );
+
+      // Na fase de densificação, crescimento grande quase nunca compensa.
+      const growthLimit = placed.length < holder.maxWords - 2 ? 8 : 3;
+      if (quality.growth > growthLimit) continue;
+
+      // Depois de algumas inserções exigimos encaixes mais fortes: isso evita
+      // criar novos "braços" só para aumentar artificialmente a contagem.
+      if (depth >= 2 && placement.intersections < 2 && quality.growth > 0) continue;
+
+      scored.push({ ...placement, denseScore: quality.score });
+    }
+
+    if (!scored.length) continue;
+    scored.sort((a, b) => b.denseScore - a.denseScore);
+
+    choices.push({
+      word: item.word,
+      placements: scored.slice(0, 6),
+      score: scored[0].denseScore + item.overlapPotential * 45
+    });
+  }
+
+  if (!choices.length) return;
+  choices.sort((a, b) => b.score - a.score);
+
+  const wordLimit = Math.min(5, choices.length);
+  for (let wi = 0; wi < wordLimit; wi += 1) {
+    if (now() >= holder.deadline || holder.nodes >= holder.maxNodes) return;
+
+    const choice = choices[wi];
+    const rest = remaining.filter((word) => word.id !== choice.word.id);
+    const placementLimit = Math.min(5, choice.placements.length);
+
+    for (let pi = 0; pi < placementLimit; pi += 1) {
+      const placement = choice.placements[pi];
+      const changes = placeWord(
+        grid,
+        placed,
+        choice.word,
+        placement.row,
+        placement.col,
+        placement.direction
+      );
+
+      denseFillSearch(grid, placed, rest, holder, rng, depth + 1);
+      undoPlacement(grid, placed, changes);
+
+      if (holder.best.placed.length >= holder.maxWords) return;
+    }
+  }
+}
+
+function densePlacementQuality(grid, bounds, currentDensity, word, placement) {
+  const dr = placement.direction === "down" ? 1 : 0;
+  const dc = placement.direction === "across" ? 1 : 0;
+  const endRow = placement.row + dr * (word.answer.length - 1);
+  const endCol = placement.col + dc * (word.answer.length - 1);
+
+  const minRow = Math.min(bounds.minRow, placement.row, endRow);
+  const maxRow = Math.max(bounds.maxRow, placement.row, endRow);
+  const minCol = Math.min(bounds.minCol, placement.col, endCol);
+  const maxCol = Math.max(bounds.maxCol, placement.col, endCol);
+  const newArea = (maxRow - minRow + 1) * (maxCol - minCol + 1);
+  const currentArea = bounds.width * bounds.height;
+  const growth = Math.max(0, newArea - currentArea);
+  const newCells = word.answer.length - placement.intersections;
+  const nextDensity = (grid.size + newCells) / Math.max(1, newArea);
+  const densityGain = nextDensity - currentDensity;
+
+  const score =
+    placement.intersections * 620 +
+    (placement.intersections >= 2 ? 520 + placement.intersections * 120 : 0) +
+    densityGain * 12000 +
+    (growth === 0 ? 520 : 0) +
+    (word.theme === "Coringa" ? 70 : 0) +
+    (word.answer.length <= 7 ? 90 : 0) -
+    growth * 135;
+
+  return { score, growth, nextDensity };
+}
+
+function isBetterDenseState(candidate, previous) {
+  if (!previous) return true;
+
+  if (candidate.placed.length !== previous.placed.length) {
+    return candidate.placed.length > previous.placed.length;
+  }
+
+  if (candidate.stats.density !== previous.stats.density) {
+    return candidate.stats.density > previous.stats.density;
+  }
+
+  if (candidate.stats.intersections !== previous.stats.intersections) {
+    return candidate.stats.intersections > previous.stats.intersections;
+  }
+
+  return candidate.stats.multiCrossWords > previous.stats.multiCrossWords;
 }
 
 function finalizeSnapshot(snapshot, seed, selectedDifficulty) {

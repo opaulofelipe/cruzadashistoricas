@@ -1,4 +1,4 @@
-import { generateCrossword } from "./generator.js";
+import { generateCrossword } from "./generator.js?v=20260911-dense1";
 
 self.addEventListener("message", (event) => {
   const message = event.data;

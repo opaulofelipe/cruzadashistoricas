@@ -116,7 +116,7 @@ function filterByTheme(bank, theme) {
 }
 
 const STORAGE_KEY = "historia-crossword-mobile-v3";
-const TARGET_WORDS = 16;
+const TARGET_WORDS = 22;
 
 const els = {
   setupView: document.querySelector("#setup-view"),
@@ -168,7 +168,7 @@ async function init() {
   wireEvents();
 
   try {
-    const result = await loadWordBank("./palavras.json?v=20260911-3");
+    const result = await loadWordBank("./palavras.json?v=20260911-dense1");
     bank = result.words;
 
     if (bank.length < 10) {
@@ -270,16 +270,17 @@ function startGeneration(words, meta) {
 
   els.generateButton.disabled = true;
   els.generateButton.textContent = "Gerando…";
-  setDataStatus("Montando uma grade compacta…", "warning");
+  setDataStatus("Montando uma grade mais densa, com mais palavras e cruzamentos…", "warning");
 
-  worker = new Worker("./js/crossword-worker.js?v=20260911-3", { type: "module" });
+  worker = new Worker("./js/crossword-worker.js?v=20260911-dense1", { type: "module" });
 
   worker.addEventListener("message", (event) => {
     const message = event.data;
 
     if (message?.type === "progress") {
       const count = message.wordsPlaced || 0;
-      setDataStatus(`Montando… ${count} palavra(s) encaixadas até agora.`, "warning");
+      const crossings = message.intersections || 0;
+      setDataStatus(`Montando… ${count} palavra(s) e ${crossings} cruzamento(s) até agora.`, "warning");
       return;
     }
 
@@ -316,7 +317,11 @@ function startGeneration(words, meta) {
       targetWords: TARGET_WORDS,
       difficulty: meta.difficulty,
       seed: secureSeed(),
-      timeBudgetMs: 1900
+      maxCandidates: 96,
+      maxFinalWords: 26,
+      maxCols: 13,
+      maxRows: 17,
+      timeBudgetMs: 5600
     }
   });
 }
