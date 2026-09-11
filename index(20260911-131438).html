@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="Palavras cruzadas de História otimizadas para celular.">
+  <title>Cruzadas de História</title>
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <div>
+        <p class="eyebrow">Jogo de conhecimento</p>
+        <h1>Cruzadas de História</h1>
+      </div>
+      <button id="header-new-button" class="icon-text-button" type="button" hidden>Nova</button>
+    </div>
+  </header>
+
+  <main>
+    <section id="setup-view" class="setup-view" aria-labelledby="setup-title">
+      <div class="setup-card">
+        <div class="setup-heading">
+          <p class="eyebrow">Nova partida</p>
+          <h2 id="setup-title">Monte uma cruzadinha</h2>
+          <p>Escolha o tema e a dificuldade. A grade é gerada em formato compacto, com até 16 palavras.</p>
+        </div>
+
+        <div id="data-status" class="status" role="status" aria-live="polite">
+          Carregando banco de palavras…
+        </div>
+
+        <form id="setup-form" hidden>
+          <label class="field">
+            <span>Tema</span>
+            <select id="theme-select" name="theme"></select>
+          </label>
+
+          <fieldset class="difficulty-field">
+            <legend>Dificuldade</legend>
+            <div class="segmented">
+              <label>
+                <input type="radio" name="difficulty" value="1">
+                <span>Fácil</span>
+              </label>
+              <label>
+                <input type="radio" name="difficulty" value="2" checked>
+                <span>Médio</span>
+              </label>
+              <label>
+                <input type="radio" name="difficulty" value="3">
+                <span>Difícil</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <div class="setup-actions">
+            <button id="generate-button" class="primary-button" type="submit">Gerar cruzadinha</button>
+            <button id="resume-button" class="secondary-button" type="button" hidden>Continuar partida</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <section id="game-view" class="game-view" hidden aria-labelledby="game-title">
+      <div class="game-meta">
+        <div>
+          <p id="game-kicker" class="eyebrow"></p>
+          <h2 id="game-title">Palavras cruzadas</h2>
+        </div>
+        <div id="progress-text" class="progress-text">0/16</div>
+      </div>
+
+      <div class="board-wrap">
+        <div id="crossword-grid" class="crossword-grid" role="grid" aria-label="Grade de palavras cruzadas"></div>
+      </div>
+
+      <section class="clue-bar" aria-label="Dica atual">
+        <button id="prev-clue" class="clue-nav" type="button" aria-label="Dica anterior">‹</button>
+        <div class="clue-copy">
+          <span id="clue-label" class="clue-label">H1</span>
+          <p id="clue-text">Selecione uma palavra.</p>
+        </div>
+        <button id="next-clue" class="clue-nav" type="button" aria-label="Próxima dica">›</button>
+      </section>
+
+      <section class="keyboard" aria-label="Teclado virtual">
+        <div class="keyboard-row">
+          <button data-key="Q" type="button">Q</button><button data-key="W" type="button">W</button>
+          <button data-key="E" type="button">E</button><button data-key="R" type="button">R</button>
+          <button data-key="T" type="button">T</button><button data-key="Y" type="button">Y</button>
+          <button data-key="U" type="button">U</button><button data-key="I" type="button">I</button>
+          <button data-key="O" type="button">O</button><button data-key="P" type="button">P</button>
+        </div>
+        <div class="keyboard-row">
+          <button data-key="A" type="button">A</button><button data-key="S" type="button">S</button>
+          <button data-key="D" type="button">D</button><button data-key="F" type="button">F</button>
+          <button data-key="G" type="button">G</button><button data-key="H" type="button">H</button>
+          <button data-key="J" type="button">J</button><button data-key="K" type="button">K</button>
+          <button data-key="L" type="button">L</button>
+        </div>
+        <div class="keyboard-row keyboard-row-last">
+          <button data-key="Z" type="button">Z</button><button data-key="X" type="button">X</button>
+          <button data-key="C" type="button">C</button><button data-key="V" type="button">V</button>
+          <button data-key="B" type="button">B</button><button data-key="N" type="button">N</button>
+          <button data-key="M" type="button">M</button>
+          <button data-key="BACKSPACE" class="backspace-key" type="button" aria-label="Apagar letra">⌫</button>
+        </div>
+      </section>
+
+      <div class="game-toolbar" aria-label="Ações da partida">
+        <button id="check-button" type="button">Verificar</button>
+        <button id="reveal-button" type="button">Revelar letra</button>
+        <button id="clear-word-button" type="button">Apagar palavra</button>
+      </div>
+
+      <p id="game-status" class="game-status" role="status" aria-live="polite"></p>
+    </section>
+  </main>
+
+  <dialog id="complete-dialog" class="complete-dialog">
+    <div class="dialog-content">
+      <p class="eyebrow">Concluída</p>
+      <h2>Cruzadinha completa</h2>
+      <p id="complete-text"></p>
+      <div class="dialog-actions">
+        <button id="close-dialog-button" class="secondary-button" type="button">Revisar</button>
+        <button id="dialog-new-button" class="primary-button" type="button">Nova cruzadinha</button>
+      </div>
+    </div>
+  </dialog>
+
+  <noscript>Este jogo precisa de JavaScript habilitado.</noscript>
+  <script>
+    (() => {
+      const status = document.getElementById("data-status");
+      if (status) status.textContent = "Iniciando o jogo…";
+
+      const showBootError = (message) => {
+        const target = document.getElementById("data-status");
+        if (!target) return;
+        target.textContent = `Erro ao iniciar: ${message}`;
+        target.classList.add("error");
+      };
+
+      window.addEventListener("error", (event) => {
+        const failedSrc = event.target?.src;
+        if (failedSrc) {
+          showBootError(`não foi possível carregar ${failedSrc.split("/").pop()}`);
+          return;
+        }
+        if (event.message) showBootError(event.message);
+      }, true);
+
+      window.addEventListener("unhandledrejection", (event) => {
+        showBootError(event.reason?.message || String(event.reason || "erro desconhecido"));
+      });
+    })();
+  </script>
+  <script defer src="./js/app.js?v=20260911-3"></script>
+</body>
+</html>
