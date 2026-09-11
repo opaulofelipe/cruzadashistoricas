@@ -133,6 +133,32 @@
   </dialog>
 
   <noscript>Este jogo precisa de JavaScript habilitado.</noscript>
-  <script type="module" src="./js/app.js"></script>
+  <script>
+    (() => {
+      const status = document.getElementById("data-status");
+      if (status) status.textContent = "Iniciando o jogo…";
+
+      const showBootError = (message) => {
+        const target = document.getElementById("data-status");
+        if (!target) return;
+        target.textContent = `Erro ao iniciar: ${message}`;
+        target.classList.add("error");
+      };
+
+      window.addEventListener("error", (event) => {
+        const failedSrc = event.target?.src;
+        if (failedSrc) {
+          showBootError(`não foi possível carregar ${failedSrc.split("/").pop()}`);
+          return;
+        }
+        if (event.message) showBootError(event.message);
+      }, true);
+
+      window.addEventListener("unhandledrejection", (event) => {
+        showBootError(event.reason?.message || String(event.reason || "erro desconhecido"));
+      });
+    })();
+  </script>
+  <script defer src="./js/app.js?v=20260911-3"></script>
 </body>
 </html>
