@@ -25,7 +25,7 @@
         <div class="setup-heading">
           <p class="eyebrow">Nova partida</p>
           <h2 id="setup-title">Monte uma cruzadinha</h2>
-          <p>Escolha o tema e a dificuldade. A grade é gerada em formato compacto, com até 16 palavras.</p>
+          <p>Escolha o tema e a dificuldade. A grade prioriza mais palavras e cruzamentos, normalmente com cerca de 22 respostas ou mais.</p>
         </div>
 
         <div id="data-status" class="status" role="status" aria-live="polite">
@@ -70,7 +70,7 @@
           <p id="game-kicker" class="eyebrow"></p>
           <h2 id="game-title">Palavras cruzadas</h2>
         </div>
-        <div id="progress-text" class="progress-text">0/16</div>
+        <div id="progress-text" class="progress-text">0/22</div>
       </div>
 
       <div class="board-wrap">
@@ -133,32 +133,6 @@
   </dialog>
 
   <noscript>Este jogo precisa de JavaScript habilitado.</noscript>
-  <script>
-    (() => {
-      const status = document.getElementById("data-status");
-      if (status) status.textContent = "Iniciando o jogo…";
-
-      const showBootError = (message) => {
-        const target = document.getElementById("data-status");
-        if (!target) return;
-        target.textContent = `Erro ao iniciar: ${message}`;
-        target.classList.add("error");
-      };
-
-      window.addEventListener("error", (event) => {
-        const failedSrc = event.target?.src;
-        if (failedSrc) {
-          showBootError(`não foi possível carregar ${failedSrc.split("/").pop()}`);
-          return;
-        }
-        if (event.message) showBootError(event.message);
-      }, true);
-
-      window.addEventListener("unhandledrejection", (event) => {
-        showBootError(event.reason?.message || String(event.reason || "erro desconhecido"));
-      });
-    })();
-  </script>
-  <script defer src="./js/app.js?v=20260911-3"></script>
+  <script type="module" src="./js/app.js?v=20260911-dense1"></script>
 </body>
 </html>
