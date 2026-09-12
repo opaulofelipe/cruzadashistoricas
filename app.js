@@ -230,7 +230,7 @@ async function generatePuzzle() {
     "Buscando uma grade com no mínimo 30 respostas e poucos blocos pretos."
   );
 
-  worker = new Worker("./generator-worker.js?v=1");
+  worker = new Worker("./generator-worker.js?v=2");
 
   worker.onmessage = event => {
     const data = event.data || {};
@@ -266,8 +266,7 @@ async function generatePuzzle() {
     words: bank,
     options: {
       minWords: 30,
-      preferredWords: 44,
-      maxBlackRatio: 0.26,
+      targetWords: 30,
       timeBudgetMs: 14000,
       seed: cryptoSeed()
     }
